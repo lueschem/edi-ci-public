@@ -22,5 +22,13 @@ jobs:
   build:
     runs-on: [self-hosted, Linux, ARM64]
     steps:
-      - name: Check out the source code
-        uses: actions/checkout@v2
+      - name: Check out the source code of this repository
+        uses: actions/checkout@v3
+      - name: Check out the source code of the edi project repository
+        uses: actions/checkout@v3
+        with:
+          repository: '${{ github.event.inputs.repository }}'
+          ref: '${{ github.event.inputs.repository_version }}'
+          path: 'edi_project_repository'
+      - name: Create the OS artifact
+        run: cd edi_project_repository && sudo edi -v image create ${{ github.event.inputs.configuration }}
