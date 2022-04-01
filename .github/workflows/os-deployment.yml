@@ -5,7 +5,7 @@ on:
       repository:
         description: 'edi project repository'
         required: true
-        default: 'https://github.com/lueschem/edi-pi.git'
+        default: 'edi-pi'
       repository_version:
         description: 'branch/version of edi project repository'
         required: true
@@ -27,7 +27,7 @@ jobs:
       - name: Check out the source code of the edi project repository
         uses: actions/checkout@v3
         with:
-          repository: '${{ github.event.inputs.repository }}'
+          repository: '${{ github.repository_owner }}/${{ github.event.inputs.repository }}'
           ref: '${{ github.event.inputs.repository_version }}'
           path: 'edi_project_repository'
       - name: Create the OS artifact
