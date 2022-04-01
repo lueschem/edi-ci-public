@@ -1,0 +1,9 @@
+name: Build and dispatch OS image to device
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: [self-hosted, Linux, ARM64]
+    steps:
+      - name: Check out the source code
+        uses: actions/checkout@v2
