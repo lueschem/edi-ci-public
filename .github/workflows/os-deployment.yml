@@ -1,5 +1,22 @@
 name: Build and dispatch OS image to device
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'edi project repository'
+        required: true
+        default: 'https://github.com/lueschem/edi-pi.git'
+      repository_version:
+        description: 'branch/version of edi project repository'
+        required: true
+        default: 'master'
+      configuration:
+        description: 'OS image configuration'
+        required: true
+        default: 'pi4-bullseye-arm64.yml'
+      device_id:
+        description: 'Mender device ID'
+        required: true
 
 jobs:
   build:
