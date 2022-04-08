@@ -30,6 +30,11 @@ jobs:
           repository: '${{ github.repository_owner }}/${{ github.event.inputs.repository }}'
           ref: '${{ github.event.inputs.repository_version }}'
           path: 'edi_project_repository'
+      - name: Apply the correct Mender tenant token
+        run: |
+          echo "mender_tenant_token: \"${MENDER_TENANT_TOKEN}\"" > edi_project_repository/configuration/mender/mender_custom.yml
+        env:
+          MENDER_TENANT_TOKEN: ${{ secrets.MENDER_TENANT_TOKEN }}
       - name: Create the OS artifact
         run: cd edi_project_repository && sudo edi -v image create ${{ github.event.inputs.configuration }}
       - name: Dispatch the OS artifact to the device.
