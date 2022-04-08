@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+import os
+import sys
+import re
+import time
+import uuid
+import argparse
+import requests
+import subprocess
+
+
+class ScriptError(Exception):
+    pass
+
+
+class MenderClient:
+    def __init__(self, server, user, password):
+        self._server = server
+        self._user = user
+        self._password = password
+        self._token = None
+
+    def _get_token(self):
+        if not self._token:
+            ret = requests.post('{}/api/management/v1/useradm/auth/login'.format(self._server),
+                                auth=(self._user, self._password))
+            ret.raise_for_status()
+            self._token = ret.text
+        return self._token
+
+    def _get_headers(self):
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer {}'.format(self._get_token())
+        }
+        return headers
+
+    def upload(self, artifact):
+        print("Analyzing artifact {}.".format(artifact.name))
+        ret = subprocess.run(['mender-artifact', 'read', artifact.name], capture_output=True)
+        ret.check_returncode()
+
+        match = re.search(' Name: (.+?)\n', ret.stdout.decode("utf-8"))
+        if not match:
+            raise ScriptError('Unable to extract artifact name from {}'.format(artifact.name))
+
+        artifact_name = match.group(1)
+
+        parameters = {
+            'name': artifact_name
+        }
+
+        ret = requests.get('{}/api/management/v1/deployments/deployments/releases/list'.format(self._server),
+                           headers=self._get_headers(), params=parameters)
+        ret.raise_for_status()
+        if len(ret.json()) > 0:
+            print("{} already got uploaded to {}.".format(artifact.name, self._server))
+        else:
+            print("Uploading {} to {}.".format(artifact.name, self._server))
+            files = {'artifact': artifact}
+            ret = requests.post('{}/api/management/v1/deployments/artifacts'.format(self._server),
+                                headers=self._get_headers(), files=files)
+
+            ret.raise_for_status()
+            print("Upload completed!")
+        return artifact_name
+
+    def dispatch(self, artifact_name, device_id, wait_for_completion=False):
+        deployment_name = str(uuid.uuid4())
+        deployment = {
+            'name': deployment_name,
+            'artifact_name': artifact_name,
+            'devices': [device_id]
+        }
+        print("Dispatching {} to {}.".format(artifact_name, device_id))
+        ret = requests.post('{}/api/management/v1/deployments/deployments'.format(self._server),
+                            headers=self._get_headers(), json=deployment)
+        ret.raise_for_status()
+
+        if wait_for_completion:
+            parameters = {
+                'search': deployment_name
+            }
+            ret = requests.get('{}/api/management/v1/deployments/deployments'.format(self._server),
+                               headers=self._get_headers(), params=parameters)
+            ret.raise_for_status()
+            deployment_id = None
+            for deployment in ret.json():
+                if deployment.get('name') == deployment_name:
+                    deployment_id = deployment.get('id')
+                    break
+
+            if not deployment_id:
+                raise ScriptError("Failed to retrieve deployment id (response={})".format(ret.json()))
+
+            deployment_status = None
+            for _ in range(120):
+                time.sleep(30)
+                ret = requests.get('{}/api/management/v1/deployments/deployments/{}'.format(self._server,
+                                                                                            deployment_id),
+                                   headers=self._get_headers())
+                ret.raise_for_status()
+                deployment_status = ret.json().get('status')
+                print("Current deployment status is {}.".format(deployment_status))
+                if deployment_status == 'finished':
+                    break
+
+            if deployment_status != 'finished':
+                raise ScriptError("Deployment (status={}) did not finish on time".format(deployment_status))
+
+            ret = requests.get('{}/api/management/v1/deployments/deployments/{}/devices/list'.format(self._server,
+                                                                                                     deployment_id),
+                               headers=self._get_headers())
+            ret.raise_for_status()
+            if len(ret.json()) != 1:
+                raise ScriptError("Failed to retrieve deployment status of device (response={})".format(ret.json()))
+            device_deployment_status = ret.json()[0].get('status')
+            if device_deployment_status not in ['success', 'already-installed']:
+                raise ScriptError("Deployment for device {} failed with status {}".format(device_id,
+                                                                                          device_deployment_status))
+            print("Artifact {} successfully deployed to {} (status={}).".format(artifact_name, device_id,
+                                                                                device_deployment_status))
+
+
+def main():
+    default_server = 'https://hosted.mender.io'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--server', default=default_server,
+                        help='The Mender server (default: {}).'.format(default_server))
+    parser.add_argument('--nowait', action='store_true',
+                        help='Do not wait until deployment got completed.')
+    parser.add_argument('ARTIFACT', type=argparse.FileType('rb'), help='The artifact file.')
+    parser.add_argument('DEVICE_ID', nargs='?', help='The ID of the device that shall receive the artifact.')
+    args = parser.parse_args()
+
+    mender_user = os.getenv('MENDER_USER')
+    mender_password = os.environ.get('MENDER_PASSWORD')
+
+    try:
+        if not mender_user:
+            raise ScriptError("Failed to retrieve Mender user from environment (MENDER_USER)")
+
+        if not mender_password:
+            raise ScriptError("Failed to retrieve Mender password from environment (MENDER_PASSWORD)")
+
+        client = MenderClient(args.server, mender_user, mender_password)
+        artifact_name = client.upload(args.ARTIFACT)
+        if args.DEVICE_ID:
+            client.dispatch(artifact_name, args.DEVICE_ID, not args.nowait)
+
+    except requests.HTTPError as http_error:
+        print("Error: {}!".format(http_error), file=sys.stderr)
+        sys.exit(1)
+    except subprocess.CalledProcessError as process_error:
+        print("Error: {}!".format(process_error), file=sys.stderr)
+        sys.exit(1)
+    except ScriptError as script_error:
+        print("Error: {}!".format(script_error), file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
