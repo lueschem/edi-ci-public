@@ -46,7 +46,7 @@ jobs:
       - name: Create the OS artifact
         run: cd edi_project_repository && sudo edi -v image create ${{ github.event.inputs.configuration }}
       - name: Dispatch the OS artifact to the device.
-        run: ./dispatch-artifact edi_project_repository/artifacts/$(echo "${{ github.event.inputs.configuration }}" | sed 's/yml$/mender/g') ${{ github.event.inputs.device_id }}
+        run: ./mender-api dispatch ${{ github.event.inputs.device_id }} edi_project_repository/artifacts/$(echo "${{ github.event.inputs.configuration }}" | sed 's/yml$/mender/g')
         env:
           MENDER_USER: ${{ secrets.MENDER_USER }}
           MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}

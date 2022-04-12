@@ -121,16 +121,49 @@ class MenderClient:
             print("Artifact {} successfully deployed to {} (status={}).".format(artifact_name, device_id,
                                                                                 device_deployment_status))
 
+    def get_inventory(self, device_id, attribute=None):
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer {access-token}'
+        }
+
+        ret = requests.get('{}/api/management/v1/inventory/devices/{}'.format(self._server, device_id),
+                           headers=self._get_headers())
+        ret.raise_for_status()
+        if not attribute:
+            return ret.json()
+
+        value = None
+        for item in ret.json().get('attributes', list()):
+            if item.get('name') == attribute:
+                value = item.get('value')
+
+        if not value:
+            raise ScriptError("Device {} does not have the attribute {}".format(device_id, attribute))
+
+        return value
+
 
 def main():
     default_server = 'https://hosted.mender.io'
     parser = argparse.ArgumentParser()
     parser.add_argument('--server', default=default_server,
                         help='The Mender server (default: {}).'.format(default_server))
-    parser.add_argument('--nowait', action='store_true',
-                        help='Do not wait until deployment got completed.')
-    parser.add_argument('ARTIFACT', type=argparse.FileType('rb'), help='The artifact file.')
-    parser.add_argument('DEVICE_ID', nargs='?', help='The ID of the device that shall receive the artifact.')
+    subparsers = parser.add_subparsers(title='commands', dest="command_name")
+    dispatch_parser = subparsers.add_parser('dispatch', help='dispatch artifact to device using Mender')
+    upload_parser = subparsers.add_parser('upload', help='upload artifact to Mender')
+    query_parser = subparsers.add_parser('query', help='query device inventory')
+
+    dispatch_parser.add_argument('--nowait', action='store_true',
+                                 help='Do not wait until deployment got completed.')
+    dispatch_parser.add_argument('DEVICE_ID', help='The ID of the device that shall receive the artifact.')
+    dispatch_parser.add_argument('ARTIFACT', type=argparse.FileType('rb'), help='The artifact file.')
+
+    upload_parser.add_argument('ARTIFACT', type=argparse.FileType('rb'), help='The artifact file.')
+
+    query_parser.add_argument('DEVICE_ID', help='The ID of the device that shall get queried.')
+    query_parser.add_argument('ATTRIBUTE', nargs='?', help='The attribute that shall get looked up.')
+
     args = parser.parse_args()
 
     mender_user = os.getenv('MENDER_USER')
@@ -144,10 +177,12 @@ def main():
             raise ScriptError("Failed to retrieve Mender password from environment (MENDER_PASSWORD)")
 
         client = MenderClient(args.server, mender_user, mender_password)
-        artifact_name = client.upload(args.ARTIFACT)
-        if args.DEVICE_ID:
-            client.dispatch(artifact_name, args.DEVICE_ID, not args.nowait)
-
+        if args.command_name == 'dispatch' or args.command_name == 'upload':
+            artifact_name = client.upload(args.ARTIFACT)
+            if args.DEVICE_ID:
+                client.dispatch(artifact_name, args.DEVICE_ID, not args.nowait)
+        elif args.command_name == 'query':
+            print(client.get_inventory(args.DEVICE_ID, args.ATTRIBUTE))
     except requests.HTTPError as http_error:
         print("Error: {}!".format(http_error), file=sys.stderr)
         sys.exit(1)
