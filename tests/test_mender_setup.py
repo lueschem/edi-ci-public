@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_upgrade_available(host):
     with host.sudo():
         cmd = host.run("fw_printenv upgrade_available")
