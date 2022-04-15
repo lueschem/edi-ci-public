@@ -1,4 +1,5 @@
 import re
+import pytest
 
 
 def test_root_device(host):
@@ -12,3 +13,8 @@ def test_root_device(host):
 
 def test_resize_completion(host):
     assert host.file("/etc/edi-resize-rootfs.done").exists
+
+
+@pytest.mark.parametrize("mountpoint", ["/", "/data", "/boot/firmware", ])
+def test_mountpoints(host, mountpoint):
+    assert host.mount_point(mountpoint).exists
