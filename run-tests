@@ -1,0 +1,77 @@
+#!/bin/bash
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+# The script expects a DEVICE_SECRETS environment variable that looks like:
+# {
+#   "edi_var":
+#   {
+#     "user": "variscite",
+#     "password": "SECRET_PASSWORD_A",
+#     "interface": "ipv4_eth0"
+#   },
+#   "edi_pi":
+#   {
+#     "user": "pi",
+#     "password": "SECRET_PASSWORD_B",
+#     "interface": "ipv4_eth0"
+#   },
+#   "edi_cl":
+#   {
+#     "user": "compulab",
+#     "password": "SECRET_PASSWORD_C",
+#     "interface": "ipv4_eth0"
+#   }
+# }
+
+if [ "$#" -ne 2 ]
+then
+    >&2 echo "Error: Illegal number of arguments!"
+    >&2 echo "Usage: run-tests DEVICE_ID EDI_PROJECT_CONFIGURATION"
+    >&2 echo "Example: run-tests 3fb4632b-96b9-475d-ac89-02255bd15b6f edi-pi"
+    exit 1
+fi
+
+DEVICE_SECRETS="${DEVICE_SECRETS:=}"
+DEVICE_ID=$1
+EDI_PROJECT_CONFIGURATION=$2
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [[ -z "${DEVICE_SECRETS}" ]]
+then
+    >&2 echo "Error: Unable to retrieve device secrets (DEVICE_SECRETS) from environment!"
+    exit 1
+fi
+
+EDI_PROJECT_CONFIGURATION=$(echo "${EDI_PROJECT_CONFIGURATION}" | tr - _)
+if ! DEVICE_USER=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION}".user)
+then
+    >&2 echo "Error: Unable to retrieve device user for configuration ${EDI_PROJECT_CONFIGURATION}!"
+    exit 1
+fi
+
+if ! DEVICE_PASSWORD=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION}".password)
+then
+    >&2 echo "Error: Unable to retrieve device password for configuration ${EDI_PROJECT_CONFIGURATION}!"
+    exit 1
+fi
+
+if ! DEVICE_INTERFACE=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION}".interface)
+then
+    >&2 echo "Error: Unable to retrieve device interface for configuration ${EDI_PROJECT_CONFIGURATION}!"
+    exit 1
+fi
+
+echo "Retrieving IP address of ${DEVICE_ID}".
+DEVICE_IP=$("${SCRIPT_DIR}/mender-api" query "${DEVICE_ID}" "${DEVICE_INTERFACE}")
+DEVICE_IP="${DEVICE_IP%/*}"
+
+echo "Removing sudo password on ${DEVICE_IP}".
+ssh -F "${SCRIPT_DIR}/no_host_key_checking" "${DEVICE_USER}@${DEVICE_IP}" > /dev/null 2>&1 << EOF
+  echo "${DEVICE_USER} ALL=(ALL) NOPASSWD: ALL" > pytest_no_passwd
+  echo "${DEVICE_PASSWORD}" | sudo -S chown root:root pytest_no_passwd
+  echo "${DEVICE_PASSWORD}" | sudo -S mv pytest_no_passwd /etc/sudoers.d/ > /dev/null 2>&1
+EOF
