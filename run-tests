@@ -37,7 +37,7 @@ unexpected_exit()
 revert_sudoers()
 {
     echo "Reverting sudo password removal on ${DEVICE_IP}."
-    ssh -F "${SCRIPT_DIR}/no_host_key_checking" "${DEVICE_USER}@${DEVICE_IP}" 'sudo rm /etc/sudoers.d/pytest_no_passwd' > /dev/null 2>&1
+    ssh -F "${SSH_CONFIG}" "${DEVICE_USER}@${DEVICE_IP}" 'sudo rm /etc/sudoers.d/pytest_no_passwd' > /dev/null 2>&1
 }
 
 if [ "$#" -ne 2 ]
@@ -53,6 +53,7 @@ DEVICE_ID=$1
 EDI_PROJECT_CONFIGURATION=$2
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SSH_CONFIG="${SCRIPT_DIR}/config/no_host_key_checking"
 
 if [[ -z "${DEVICE_SECRETS}" ]]
 then
@@ -86,14 +87,14 @@ DEVICE_IP="${DEVICE_IP%/*}"
 trap unexpected_exit EXIT
 
 echo "Removing sudo password on ${DEVICE_IP}."
-ssh -F "${SCRIPT_DIR}/no_host_key_checking" "${DEVICE_USER}@${DEVICE_IP}" > /dev/null 2>&1 << EOF
+ssh -F "${SSH_CONFIG}" "${DEVICE_USER}@${DEVICE_IP}" > /dev/null 2>&1 << EOF
     echo "${DEVICE_USER} ALL=(ALL) NOPASSWD: ALL" > pytest_no_passwd
     echo "${DEVICE_PASSWORD}" | sudo -S chown root:root pytest_no_passwd
     echo "${DEVICE_PASSWORD}" | sudo -S mv pytest_no_passwd /etc/sudoers.d/ > /dev/null 2>&1
 EOF
 
 echo "Running tests on ${DEVICE_IP}."
-py.test-3 --ssh-config="${SCRIPT_DIR}/no_host_key_checking" --hosts="${DEVICE_USER}@${DEVICE_IP}" --connection=ssh
+py.test-3 --ssh-config="${SSH_CONFIG}" --hosts="${DEVICE_USER}@${DEVICE_IP}" --connection=ssh
 
 revert_sudoers
 trap - EXIT
