@@ -61,22 +61,22 @@ then
     exit 1
 fi
 
-EDI_PROJECT_CONFIGURATION=$(echo "${EDI_PROJECT_CONFIGURATION}" | tr - _)
-if ! DEVICE_USER=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION}".user)
+EDI_PROJECT_CONFIGURATION_JSON=$(echo "${EDI_PROJECT_CONFIGURATION}" | tr - _)
+if ! DEVICE_USER=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION_JSON}".user)
 then
-    >&2 echo "Error: Unable to retrieve device user for configuration ${EDI_PROJECT_CONFIGURATION}!"
+    >&2 echo "Error: Unable to retrieve device user for configuration ${EDI_PROJECT_CONFIGURATION_JSON}!"
     exit 1
 fi
 
-if ! DEVICE_PASSWORD=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION}".password)
+if ! DEVICE_PASSWORD=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION_JSON}".password)
 then
-    >&2 echo "Error: Unable to retrieve device password for configuration ${EDI_PROJECT_CONFIGURATION}!"
+    >&2 echo "Error: Unable to retrieve device password for configuration ${EDI_PROJECT_CONFIGURATION_JSON}!"
     exit 1
 fi
 
-if ! DEVICE_INTERFACE=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION}".interface)
+if ! DEVICE_INTERFACE=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION_JSON}".interface)
 then
-    >&2 echo "Error: Unable to retrieve device interface for configuration ${EDI_PROJECT_CONFIGURATION}!"
+    >&2 echo "Error: Unable to retrieve device interface for configuration ${EDI_PROJECT_CONFIGURATION_JSON}!"
     exit 1
 fi
 
@@ -94,7 +94,7 @@ ssh -F "${SSH_CONFIG}" "${DEVICE_USER}@${DEVICE_IP}" > /dev/null 2>&1 << EOF
 EOF
 
 echo "Running tests on ${DEVICE_IP}."
-py.test-3 --ssh-config="${SSH_CONFIG}" --hosts="${DEVICE_USER}@${DEVICE_IP}" --connection=ssh
+py.test-3 --ignore="${EDI_PROJECT_CONFIGURATION}/" --ignore="artifacts/" --ssh-config="${SSH_CONFIG}" --hosts="${DEVICE_USER}@${DEVICE_IP}" --connection=ssh
 
 revert_sudoers
 trap - EXIT
