@@ -28,7 +28,7 @@ set -o pipefail
 
 unexpected_exit()
 {
-    >&2 echo "Error: Unexpected exit!"
+    >&2 echo "Error: Unexpected exit (code $?)!"
     trap - EXIT
     revert_sudoers
     exit 1
@@ -94,7 +94,7 @@ ssh -F "${SSH_CONFIG}" "${DEVICE_USER}@${DEVICE_IP}" > /dev/null 2>&1 << EOF
 EOF
 
 echo "Running tests on ${DEVICE_IP}."
-py.test-3 --ignore="${EDI_PROJECT_CONFIGURATION}/" --ignore="artifacts/" --ssh-config="${SSH_CONFIG}" --hosts="${DEVICE_USER}@${DEVICE_IP}" --connection=ssh
+py.test-3 --ignore="${EDI_PROJECT_CONFIGURATION}/" --ignore="artifacts/" --ssh-config="${SSH_CONFIG}" --hosts="ssh://${DEVICE_USER}@${DEVICE_IP}"
 
 revert_sudoers
 trap - EXIT
