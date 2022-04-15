@@ -29,28 +29,28 @@ jobs:
         with:
           repository: '${{ github.repository_owner }}/${{ github.event.inputs.repository }}'
           ref: '${{ github.event.inputs.repository_version }}'
-          path: 'edi_project_repository'
+          path: '${{ github.event.inputs.repository }}'
       - name: Apply the correct Mender tenant token
         run: |
-          echo "mender_tenant_token: \"${MENDER_TENANT_TOKEN}\"" > edi_project_repository/configuration/mender/mender_custom.yml
+          echo "mender_tenant_token: \"${MENDER_TENANT_TOKEN}\"" > ${{ github.event.inputs.repository }}/configuration/mender/mender_custom.yml
         env:
           MENDER_TENANT_TOKEN: ${{ secrets.MENDER_TENANT_TOKEN }}
       - name: Add additional ssh public key for ci/cd remote administration
         run: |
           if [[ "${CI_CD_SSH_PUB_KEY}" != "" ]]
           then
-              echo "${CI_CD_SSH_PUB_KEY}" > edi_project_repository/ssh_pub_keys/ci-cd-admin.pub
+              echo "${CI_CD_SSH_PUB_KEY}" > ${{ github.event.inputs.repository }}/ssh_pub_keys/ci-cd-admin.pub
           fi
         env:
           CI_CD_SSH_PUB_KEY: ${{ secrets.CI_CD_SSH_PUB_KEY }}
       - name: Create the OS artifact
-        run: cd edi_project_repository && sudo edi -v image create ${{ github.event.inputs.configuration }}
+        run: cd ${{ github.event.inputs.repository }} && sudo edi -v image create ${{ github.event.inputs.configuration }}
       - name: Dispatch the OS artifact to the device.
-        run: ./mender-api dispatch ${{ github.event.inputs.device_id }} edi_project_repository/artifacts/$(echo "${{ github.event.inputs.configuration }}" | sed 's/yml$/mender/g')
+        run: ./mender-api dispatch ${{ github.event.inputs.device_id }} ${{ github.event.inputs.repository }}/artifacts/$(echo "${{ github.event.inputs.configuration }}" | sed 's/yml$/mender/g')
         env:
           MENDER_USER: ${{ secrets.MENDER_USER }}
           MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
       - name: Perform cleanup
-        run: cd edi_project_repository && sudo edi -v image create --recursive-clean 10 ${{ github.event.inputs.configuration }} ; sudo rm -rf edi_project_repository
+        run: cd ${{ github.event.inputs.repository }} && sudo edi -v image create --recursive-clean 10 ${{ github.event.inputs.configuration }} ; sudo rm -rf ${{ github.event.inputs.repository }}
         if: always()
 
