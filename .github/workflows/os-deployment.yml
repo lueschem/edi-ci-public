@@ -45,12 +45,12 @@ jobs:
           CI_CD_SSH_PUB_KEY: ${{ secrets.CI_CD_SSH_PUB_KEY }}
       - name: Create the OS artifact
         run: cd ${{ github.event.inputs.repository }} && sudo edi -v image create ${{ github.event.inputs.configuration }}
-      - name: Dispatch the OS artifact to the device.
+      - name: Dispatch the OS artifact to the device
         run: ./mender-api dispatch ${{ github.event.inputs.device_id }} ${{ github.event.inputs.repository }}/artifacts/$(echo "${{ github.event.inputs.configuration }}" | sed 's/yml$/mender/g')
         env:
           MENDER_USER: ${{ secrets.MENDER_USER }}
           MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
-      - name: Run tests on the device.
+      - name: Run tests on the device
         run: ./run-tests ${{ github.event.inputs.device_id }} ${{ github.event.inputs.repository }}
         env:
           MENDER_USER: ${{ secrets.MENDER_USER }}
