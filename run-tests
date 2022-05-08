@@ -54,15 +54,29 @@ then
     exit 1
 fi
 
-if ! DEVICE_INTERFACE=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION_JSON}".interface)
+if ! DEVICE_INTERFACES=$(echo "${DEVICE_SECRETS}" | jq -r -e ."${EDI_PROJECT_CONFIGURATION_JSON}".interface)
 then
-    >&2 echo "Error: Unable to retrieve device interface for configuration ${EDI_PROJECT_CONFIGURATION_JSON}!"
+    >&2 echo "Error: Unable to retrieve device interface(s) for configuration ${EDI_PROJECT_CONFIGURATION_JSON}!"
     exit 1
 fi
 
 echo "Retrieving IP address of ${DEVICE_ID}".
-DEVICE_IP=$("${SCRIPT_DIR}/mender-api" query "${DEVICE_ID}" "${DEVICE_INTERFACE}")
-DEVICE_IP="${DEVICE_IP%/*}"
+DEVICE_IP=""
+IFS=' ' read -r -a INTERFACE_ARRAY <<< "${DEVICE_INTERFACES}"
+for interface in  "${INTERFACE_ARRAY[@]}"
+do
+    if DEVICE_IP=$("${SCRIPT_DIR}/mender-api" query "${DEVICE_ID}" "${interface}")
+    then
+        DEVICE_IP="${DEVICE_IP%/*}"
+        break;
+    fi
+done
+
+if [[ -z "${DEVICE_IP}" ]]
+then
+    >&2 echo "Error: Failed to retrieve IP address of ${DEVICE_ID}!"
+    exit 1
+fi
 
 trap unexpected_exit EXIT
 
