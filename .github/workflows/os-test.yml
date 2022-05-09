@@ -1,0 +1,32 @@
+name: Test OS setup
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'edi project repository'
+        required: true
+        default: 'edi-pi'
+      repository_version:
+        description: 'branch/version of edi project repository'
+        required: true
+        default: 'master'
+      configuration:
+        description: 'OS image configuration'
+        required: true
+        default: 'pi4-bullseye-arm64.yml'
+      device_id:
+        description: 'Mender device ID'
+        required: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, Linux, ARM64]
+    steps:
+      - name: Check out the source code of this repository
+        uses: actions/checkout@v3
+      - name: Run tests on the device
+        run: ./run-tests ${{ github.event.inputs.device_id }} ${{ github.event.inputs.repository }}
+        env:
+          MENDER_USER: ${{ secrets.MENDER_USER }}
+          MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
+          DEVICE_SECRETS: ${{ secrets.DEVICE_SECRETS }}
