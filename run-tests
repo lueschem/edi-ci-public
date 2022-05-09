@@ -78,6 +78,9 @@ then
     exit 1
 fi
 
+echo "Testing connection to ${DEVICE_IP}."
+ssh -F "${SSH_CONFIG}" "${DEVICE_USER}@${DEVICE_IP}" true
+
 trap unexpected_exit EXIT
 
 echo "Removing sudo password on ${DEVICE_IP}."
