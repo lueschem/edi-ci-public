@@ -1,9 +1,16 @@
-# edi-ci-cd
+# edi-ci
 
-Continuous integration and delivery for edi project configurations based on GitHub actions.
+Continuous integration for edi project configurations based on GitHub actions.
 
-Note: edi-ci-cd is a private GitHub repository as it is interfacing with GitHub action runners.
-edi-ci-cd-public is a clone of edi-ci-cd and makes the content visible for a broader audience.
+Currently edi-ci is capable of
+
+- building OS images based on an edi project configuration
+- dispatching the OS images to embedded devices
+- testing the dispatched OS images on the embedded devices
+
+
+Note: edi-ci is a private GitHub repository as it is interfacing with GitHub action runners.
+edi-ci-public is a clone of edi-ci and makes the content visible for a broader audience.
 
 ## Run Tests Locally
 
@@ -26,3 +33,8 @@ export DEVICE_SECRETS="$(cat config/device_secrets_sample.json)"
 `MENDER_USER`: the Mender user (e-mail)
 
 `MENDER_PASSWORD`: the Mender password
+
+## More Information
+
+This [blog post](https://www.get-edi.io/Building-and-Testing-OS-Images-with-GitHub-Actions/) describes
+the setup of the CI pipeline.
