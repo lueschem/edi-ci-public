@@ -27,41 +27,43 @@ jobs:
   build:
     runs-on: [self-hosted, Linux, ARM64]
     steps:
+      - name: Print summary of job
+        run: echo "${{ inputs.repository }}/${{ inputs.repository_version }}:${{ inputs.configuration }} --> ${{ inputs.device_id }} (run_tests=${{ inputs.run_tests }})"
       - name: Check out the source code of this repository
         uses: actions/checkout@v3
       - name: Check out the source code of the edi project repository
         uses: actions/checkout@v3
         with:
-          repository: '${{ github.repository_owner }}/${{ github.event.inputs.repository }}'
-          ref: '${{ github.event.inputs.repository_version }}'
-          path: '${{ github.event.inputs.repository }}'
+          repository: '${{ github.repository_owner }}/${{ inputs.repository }}'
+          ref: '${{ inputs.repository_version }}'
+          path: '${{ inputs.repository }}'
       - name: Apply the correct Mender tenant token
         run: |
-          echo "mender_tenant_token: \"${MENDER_TENANT_TOKEN}\"" > ${{ github.event.inputs.repository }}/configuration/mender/mender_custom.yml
+          echo "mender_tenant_token: \"${MENDER_TENANT_TOKEN}\"" > ${{ inputs.repository }}/configuration/mender/mender_custom.yml
         env:
           MENDER_TENANT_TOKEN: ${{ secrets.MENDER_TENANT_TOKEN }}
       - name: Add additional ssh public key for ci/cd remote administration
         run: |
           if [[ "${CI_CD_SSH_PUB_KEY}" != "" ]]
           then
-              echo "${CI_CD_SSH_PUB_KEY}" > ${{ github.event.inputs.repository }}/ssh_pub_keys/ci-cd-admin.pub
+              echo "${CI_CD_SSH_PUB_KEY}" > ${{ inputs.repository }}/ssh_pub_keys/ci-cd-admin.pub
           fi
         env:
           CI_CD_SSH_PUB_KEY: ${{ secrets.CI_CD_SSH_PUB_KEY }}
       - name: Create the OS artifact
-        run: cd ${{ github.event.inputs.repository }} && sudo edi -v image create ${{ github.event.inputs.configuration }}
+        run: cd ${{ inputs.repository }} && sudo edi -v image create ${{ inputs.configuration }}
       - name: Dispatch the OS artifact to the device
-        run: ./mender-api dispatch ${{ github.event.inputs.device_id }} ${{ github.event.inputs.repository }}/artifacts/$(echo "${{ github.event.inputs.configuration }}" | sed 's/yml$/mender/g')
+        run: ./mender-api dispatch ${{ inputs.device_id }} ${{ inputs.repository }}/artifacts/$(echo "${{ inputs.configuration }}" | sed 's/yml$/mender/g')
         env:
           MENDER_USER: ${{ secrets.MENDER_USER }}
           MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
       - name: Run tests on the device
-        run: ./run-tests ${{ github.event.inputs.device_id }} ${{ github.event.inputs.repository }}
+        run: ./run-tests ${{ inputs.device_id }} ${{ inputs.repository }}
         env:
           MENDER_USER: ${{ secrets.MENDER_USER }}
           MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
           DEVICE_SECRETS: ${{ secrets.DEVICE_SECRETS }}
-        if: github.event.inputs.run_tests
+        if: inputs.run_tests
       - name: Perform cleanup
-        run: cd ${{ github.event.inputs.repository }} && sudo edi -v image create --recursive-clean 10 ${{ github.event.inputs.configuration }} ; sudo rm -rf ${{ github.event.inputs.repository }}
+        run: cd ${{ inputs.repository }} && sudo edi -v image create --recursive-clean 10 ${{ inputs.configuration }} ; sudo rm -rf ${{ inputs.repository }}
         if: always()
