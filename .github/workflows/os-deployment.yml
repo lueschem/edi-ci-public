@@ -13,10 +13,15 @@ on:
       configuration:
         description: 'OS image configuration'
         required: true
-        default: 'pi4-bullseye-arm64.yml'
+        default: 'pi4-bullseye-arm64-gitops.yml'
       device_id:
         description: 'Mender device ID'
         required: true
+      run_tests:
+        type: boolean
+        description: 'Test new OS image'
+        required: true
+        default: true
 
 jobs:
   build:
@@ -56,6 +61,7 @@ jobs:
           MENDER_USER: ${{ secrets.MENDER_USER }}
           MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
           DEVICE_SECRETS: ${{ secrets.DEVICE_SECRETS }}
+        if: github.event.inputs.run_tests
       - name: Perform cleanup
         run: cd ${{ github.event.inputs.repository }} && sudo edi -v image create --recursive-clean 10 ${{ github.event.inputs.configuration }} ; sudo rm -rf ${{ github.event.inputs.repository }}
         if: always()
