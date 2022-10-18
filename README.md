@@ -30,9 +30,7 @@ export DEVICE_SECRETS="$(cat config/device_secrets_sample.json)"
 
 `MENDER_TENANT_TOKEN`: the token of your hosted Mender tenant
 
-`MENDER_USER`: the Mender user (e-mail)
-
-`MENDER_PASSWORD`: the Mender password
+`MENDER_ACCESS_TOKEN`: the Mender personal access token
 
 ## More Information
 

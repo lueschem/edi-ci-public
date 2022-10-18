@@ -27,6 +27,5 @@ jobs:
       - name: Run tests on the device
         run: ./run-tests ${{ github.event.inputs.device_id }} ${{ github.event.inputs.repository }}
         env:
-          MENDER_USER: ${{ secrets.MENDER_USER }}
-          MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
+          MENDER_ACCESS_TOKEN: ${{ secrets.MENDER_ACCESS_TOKEN }}
           DEVICE_SECRETS: ${{ secrets.DEVICE_SECRETS }}

@@ -55,13 +55,11 @@ jobs:
       - name: Dispatch the OS artifact to the device
         run: ./mender-api dispatch ${{ inputs.device_id }} ${{ inputs.repository }}/artifacts/$(echo "${{ inputs.configuration }}" | sed 's/yml$/mender/g')
         env:
-          MENDER_USER: ${{ secrets.MENDER_USER }}
-          MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
+          MENDER_ACCESS_TOKEN: ${{ secrets.MENDER_ACCESS_TOKEN }}
       - name: Run tests on the device
         run: ./run-tests ${{ inputs.device_id }} ${{ inputs.repository }}
         env:
-          MENDER_USER: ${{ secrets.MENDER_USER }}
-          MENDER_PASSWORD: ${{ secrets.MENDER_PASSWORD }}
+          MENDER_ACCESS_TOKEN: ${{ secrets.MENDER_ACCESS_TOKEN }}
           DEVICE_SECRETS: ${{ secrets.DEVICE_SECRETS }}
         if: inputs.run_tests
       - name: Perform cleanup
