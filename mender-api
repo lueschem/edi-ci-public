@@ -15,11 +15,11 @@ class ScriptError(Exception):
 
 
 class MenderClient:
-    def __init__(self, server, user, password):
+    def __init__(self, server, user, password, token):
         self._server = server
         self._user = user
         self._password = password
-        self._token = None
+        self._token = token
 
     def _get_token(self):
         if not self._token:
@@ -164,15 +164,18 @@ def main():
 
     mender_user = os.getenv('MENDER_USER')
     mender_password = os.environ.get('MENDER_PASSWORD')
+    mender_token = os.environ.get('MENDER_TOKEN')
 
     try:
-        if not mender_user:
-            raise ScriptError("Failed to retrieve Mender user from environment (MENDER_USER)")
+        if not mender_token:
+            if not mender_user:
+                raise ScriptError("Failed to retrieve Mender user or token from environment (MENDER_USER "
+                                  "or MENDER_TOKEN)")
 
-        if not mender_password:
-            raise ScriptError("Failed to retrieve Mender password from environment (MENDER_PASSWORD)")
+            if not mender_password:
+                raise ScriptError("Failed to retrieve Mender password from environment (MENDER_PASSWORD)")
 
-        client = MenderClient(args.server, mender_user, mender_password)
+        client = MenderClient(args.server, mender_user, mender_password, mender_token)
         if args.command_name == 'dispatch' or args.command_name == 'upload':
             artifact_name = client.upload(args.ARTIFACT)
             if args.DEVICE_ID:
