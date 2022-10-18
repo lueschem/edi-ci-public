@@ -164,13 +164,13 @@ def main():
 
     mender_user = os.getenv('MENDER_USER')
     mender_password = os.environ.get('MENDER_PASSWORD')
-    mender_token = os.environ.get('MENDER_TOKEN')
+    mender_token = os.environ.get('MENDER_ACCESS_TOKEN')
 
     try:
         if not mender_token:
             if not mender_user:
                 raise ScriptError("Failed to retrieve Mender user or token from environment (MENDER_USER "
-                                  "or MENDER_TOKEN)")
+                                  "or MENDER_ACCESS_TOKEN)")
 
             if not mender_password:
                 raise ScriptError("Failed to retrieve Mender password from environment (MENDER_PASSWORD)")
