@@ -47,11 +47,11 @@ make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image ARCH=arm64 CROSS_COMPILE=a
 
 BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
 mkdir -p "${BUILD_OUTPUT}"
-cp ../linux-* "${BUILD_OUTPUT}"
+find ../ -maxdepth 1 -type f | xargs -I {} cp {} "${BUILD_OUTPUT}"
 
 cd "${BUILD_OUTPUT}"
 
-KERNEL_PACKAGE=$(find . -name "linux-image*.deb" .)
+KERNEL_PACKAGE=$(find . -name "linux-image*.deb")
 KERNEL_PACKAGE=${KERNEL_PACKAGE#./}
 KERNEL_PACKAGE=${KERNEL_PACKAGE%.deb}
 
