@@ -14,6 +14,8 @@ edi-ci-public is a clone of edi-ci and makes the content visible for a broader a
 
 ## Run Tests Locally
 
+Without 2FA using username and password:
+
 ``` bash
 export MENDER_USER=MY_MENDER_LOGIN
 export MENDER_PASSWORD=MY_MENDER_PASSWORD
@@ -21,8 +23,15 @@ export DEVICE_SECRETS="$(cat config/device_secrets_sample.json)"
 ./run-tests MENDER_DEVICE_ID EDI_PROJECT_CONFIGURATION
 ```
 
-## Secrets on GitHub
+By using a mender access token:
 
+``` bash
+export MENDER_ACCESS_TOKEN=MY_MENDER_ACCESS_TOKEN
+export DEVICE_SECRETS="$(cat config/device_secrets_sample.json)"
+./run-tests MENDER_DEVICE_ID EDI_PROJECT_CONFIGURATION
+```
+
+## Secrets on GitHub
 
 `CI_CD_SSH_PUB_KEY`: ssh public key of the user that wants to easily access the CI/CD devices (optional)
 
