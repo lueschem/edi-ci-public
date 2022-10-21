@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Run kernel build within a virgin Debian container.
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+if [[ $EUID -ne 0 ]]
+then
+    >&2 echo "Error: This script must be run as root."
+    exit 1
+fi
+
+if [[ $# -ne 2 ]]
+then
+    >&2 echo "Error: This script expects two parameters:"
+    >&2 echo "       build-kernel-iot-gate-imx8 NXP_RELEASE CPL_BRANCH"
+    exit 1
+fi
+
+NXP_RELEASE="${1}"
+CPL_BRANCH="${2}"
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "${SCRIPTDIR}/../.."
+
+DEBIAN_FRONTEND=noninteractive apt-get update > /dev/null
+DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio libncurses5-dev bison libssl-dev wget lzop rsync
+
+mkdir -p "${CPL_BRANCH}"
+cd "${CPL_BRANCH}"
+git clone -b "${CPL_BRANCH}" https://github.com/compulab-yokneam/meta-bsp-imx8mm.git
+PATCHES=$(pwd)/meta-bsp-imx8mm/recipes-kernel/linux/compulab/imx8mm
+# Workaround: Looks like an unrelated patch:
+rm -f "${PATCHES}/0999-firmware-Add-the-brcm-firmware-to-the.patch"
+git clone -b "${NXP_RELEASE}" --single-branch https://source.codeaurora.org/external/imx/linux-imx.git
+cd linux-imx
+git config user.email "lueschem@gmail.com"
+git config user.name "Matthias Luescher"
+git checkout -b linux-compulab
+git am "${PATCHES}"/*.patch
+
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- iot-gate-imx8_defconfig
+make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- deb-pkg
+
+BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
+mkdir -p "${BUILD_OUTPUT}"
+cp ../linux-* "${BUILD_OUTPUT}"
+
+cd "${BUILD_OUTPUT}"
+
+KERNEL_PACKAGE=$(find . -name "linux-image*.deb" .)
+KERNEL_PACKAGE=${KERNEL_PACKAGE#./}
+KERNEL_PACKAGE=${KERNEL_PACKAGE%.deb}
+
+cat << EOF > build-info
+PACKAGE_NAME=$(echo "${KERNEL_PACKAGE}" | cut -d'_' -f1)
+PACKAGE_VERSION=$(echo "${KERNEL_PACKAGE}" | cut -d'_' -f2)
+PACKAGE_ARCHITECTURE=$(echo "${KERNEL_PACKAGE}" | cut -d'_' -f3)
+EOF
+
+echo "========"
+echo "Success!"
+echo "========"
