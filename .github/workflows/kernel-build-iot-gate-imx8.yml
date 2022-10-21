@@ -1,0 +1,38 @@
+name: Build kernel for Compulab iot-gate-imx8
+on:
+  workflow_dispatch:
+    inputs:
+      distribution_release:
+        description: 'Debian distribution release'
+        required: true
+        default: 'bullseye'
+      nxp_release:
+        description: 'NXP release name (e.g. lf-5.10.y)'
+        required: true
+      cpl_branch:
+        description: 'Compulab branch name (e.g. iot-gate-imx8_r3.1)'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out the source code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Pull docker container
+        run: docker pull debian:"${{ inputs.distribution_release }}"
+      - name: Run build job within docker container
+        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-iot-gate-imx8 ${{ inputs.nxp_release }} ${{ inputs.cpl_branch }}"
+      - name: Upload package to packagecloud repository
+        run: ./.github/scripts/upload-package-packagecloud master "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
+        env:
+          PACKAGECLOUD_USER: ${{ secrets.PACKAGECLOUD_USER }}
+          PACKAGECLOUD_REPOSITORY: ${{ secrets.PACKAGECLOUD_REPOSITORY }}
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
