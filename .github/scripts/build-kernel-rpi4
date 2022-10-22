@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Run kernel build within a virgin Debian container.
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+if [[ $EUID -ne 0 ]]
+then
+    >&2 echo "Error: This script must be run as root."
+    exit 1
+fi
+
+if [[ $# -ne 1 ]]
+then
+    >&2 echo "Error: This script expects one parameters:"
+    >&2 echo "       build-kernel-rpi4 GIT_TAG"
+    exit 1
+fi
+
+GIT_TAG="${1}"
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "${SCRIPTDIR}/../.."
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update > /dev/null
+apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio libncurses5-dev bison libssl-dev wget lzop rsync
+
+mkdir -p "rpi4-${GIT_TAG}"
+cd "rpi4-${GIT_TAG}"
+
+git clone --branch "${GIT_TAG}" --depth 1 https://github.com/raspberrypi/linux.git
+cd linux
+export ARCH=arm64
+export CROSS_COMPILE=aarch64-linux-gnu-
+make bcm2711_defconfig
+make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image deb-pkg
+
+BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
+mkdir -p "${BUILD_OUTPUT}"
+find ../ -maxdepth 1 -type f | xargs -I {} cp {} "${BUILD_OUTPUT}"
+
+echo "========"
+echo "Success!"
+echo "========"

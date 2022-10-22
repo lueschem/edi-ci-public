@@ -1,0 +1,35 @@
+name: Build kernel for Raspberry Pi 4
+on:
+  workflow_dispatch:
+    inputs:
+      distribution_release:
+        description: 'Debian distribution release'
+        required: true
+        default: 'bullseye'
+      git_tag:
+        description: 'Git tag of kernel (e.g. 1.20220830)'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out the source code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Pull docker container
+        run: docker pull debian:"${{ inputs.distribution_release }}"
+      - name: Run build job within docker container
+        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-rpi4 ${{ inputs.git_tag }}"
+      - name: Upload package to packagecloud repository
+        run: ./.github/scripts/upload-package-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
+        env:
+          PACKAGECLOUD_USER: ${{ secrets.PACKAGECLOUD_USER }}
+          PACKAGECLOUD_REPOSITORY: ${{ secrets.PACKAGECLOUD_REPOSITORY }}
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
