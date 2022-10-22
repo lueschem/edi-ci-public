@@ -13,7 +13,7 @@ on:
       configuration:
         description: 'OS image configuration'
         required: true
-        default: 'pi4-bullseye-arm64.yml'
+        default: 'pi4-bullseye-arm64-gitops.yml'
       device_id:
         description: 'Mender device ID'
         required: true
@@ -22,10 +22,12 @@ jobs:
   build:
     runs-on: [self-hosted, Linux, ARM64]
     steps:
+      - name: Print summary of job
+        run: echo "${{ inputs.repository }}/${{ inputs.repository_version }}:${{ inputs.configuration }} --> ${{ inputs.device_id }}"
       - name: Check out the source code of this repository
         uses: actions/checkout@v3
       - name: Run tests on the device
-        run: ./run-tests ${{ github.event.inputs.device_id }} ${{ github.event.inputs.repository }}
+        run: ./run-tests ${{ inputs.device_id }} ${{ inputs.repository }}
         env:
           MENDER_ACCESS_TOKEN: ${{ secrets.MENDER_ACCESS_TOKEN }}
           DEVICE_SECRETS: ${{ secrets.DEVICE_SECRETS }}
