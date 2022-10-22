@@ -31,7 +31,7 @@ jobs:
       - name: Run build job within docker container
         run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-iot-gate-imx8 ${{ inputs.nxp_release }} ${{ inputs.cpl_branch }}"
       - name: Upload package to packagecloud repository
-        run: ./.github/scripts/upload-package-packagecloud master "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
+        run: ./.github/scripts/upload-package-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
         env:
           PACKAGECLOUD_USER: ${{ secrets.PACKAGECLOUD_USER }}
           PACKAGECLOUD_REPOSITORY: ${{ secrets.PACKAGECLOUD_REPOSITORY }}

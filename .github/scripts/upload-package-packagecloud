@@ -1,19 +1,18 @@
 #!/bin/bash
 
-# Upload a Debian package to PackageCloud
+# Upload a Debian kernel package located in the build-output directory to PackageCloud
 
-# Usage: upload-package-packagecloud GIT_BRANCH REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION DISTRIBUTION_RELEASE
-# Example: upload-package-packagecloud develop get-edi debian debian buster
+# Usage: upload-package-packagecloud REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION DISTRIBUTION_RELEASE
+# Example: upload-package-packagecloud get-edi debian debian buster
 
 set -o nounset
 set -o errexit
 set -o pipefail
 
-GIT_BRANCH=$1
-REPOSITORY_USER=$2
-REPOSITORY_NAME=$3
-DISTRIBUTION=$4
-DISTRIBUTION_RELEASE=$5
+REPOSITORY_USER=$1
+REPOSITORY_NAME=$2
+DISTRIBUTION=$3
+DISTRIBUTION_RELEASE=$4
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORKDIR="${SCRIPTDIR}/../../build-output"
@@ -24,26 +23,16 @@ then
     exit 1
 fi
 
-if [ ! -f "${WORKDIR}/build-info" ]
-then
-    >&2 echo "Error: Missing artifacts from previous build step."
-    exit 1
-fi
-
 cd "${WORKDIR}"
-
-source build-info
 
 sudo gem install package_cloud
 
-REPOSITORY_SUFFIX=""
-
-PACKAGE="${PACKAGE_NAME}_${PACKAGE_VERSION}_${PACKAGE_ARCHITECTURE}.deb"
-PACKAGE_DSC="${PACKAGE_NAME}_${PACKAGE_VERSION}.dsc"
+PACKAGE=$(find . -name "linux-image*.deb")
+PACKAGE_DSC=$(find . -name "linux-*.dsc")
 
 push_package()
 {
-    UPLOAD_PATH="${REPOSITORY_USER}/${REPOSITORY_NAME}${REPOSITORY_SUFFIX}/${DISTRIBUTION}/${DISTRIBUTION_RELEASE}"
+    UPLOAD_PATH="${REPOSITORY_USER}/${REPOSITORY_NAME}/${DISTRIBUTION}/${DISTRIBUTION_RELEASE}"
     echo "Deploying package ${PACKAGE} and ${PACKAGE_DSC} to ${UPLOAD_PATH}."
     package_cloud push "${UPLOAD_PATH}" "${PACKAGE}"
     package_cloud push "${UPLOAD_PATH}" "${PACKAGE_DSC}"
