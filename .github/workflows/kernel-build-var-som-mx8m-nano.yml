@@ -26,7 +26,7 @@ jobs:
       - name: Pull docker container
         run: docker pull debian:"${{ inputs.distribution_release }}"
       - name: Run build job within docker container
-        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-iot-gate-imx8 ${{ inputs.kernel_branch }}"
+        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-var-som-mx8m-nano ${{ inputs.kernel_branch }}"
       - name: Upload package to packagecloud repository
         run: ./.github/scripts/upload-package-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
         env:
