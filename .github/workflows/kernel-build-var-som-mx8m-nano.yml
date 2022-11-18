@@ -7,7 +7,7 @@ on:
         required: true
         default: 'bullseye'
       kernel_branch:
-        description: 'Variscite kernel branch name (e.g. 5.4-2.1.x-imx_var01)'
+        description: 'Variscite kernel branch name (e.g. lf-5.10.y_var04)'
         required: true
 
 jobs:
