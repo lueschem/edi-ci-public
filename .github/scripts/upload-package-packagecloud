@@ -27,7 +27,7 @@ cd "${WORKDIR}"
 
 sudo gem install package_cloud
 
-PACKAGE=$(find . -name "linux-image*.deb")
+PACKAGE=$(find . -name "linux-image*.deb" -and -not -name "linux-image*-dbg*.deb")
 PACKAGE_DSC=$(find . -name "linux-*.dsc")
 
 push_package()
