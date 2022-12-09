@@ -2,8 +2,8 @@
 
 # Upload a Debian kernel package located in the build-output directory to PackageCloud
 
-# Usage: upload-package-packagecloud REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION DISTRIBUTION_RELEASE
-# Example: upload-package-packagecloud get-edi debian debian buster
+# Usage: upload-kernel-packages-packagecloud REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION DISTRIBUTION_RELEASE
+# Example: upload-kernel-packages-packagecloud get-edi debian debian buster
 
 set -o nounset
 set -o errexit
