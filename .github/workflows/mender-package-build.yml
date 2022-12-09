@@ -32,9 +32,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-#      - name: Upload package to packagecloud repository
-#        run: ./.github/scripts/upload-kernel-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
-#        env:
-#          PACKAGECLOUD_USER: ${{ secrets.PACKAGECLOUD_USER }}
-#          PACKAGECLOUD_REPOSITORY: ${{ secrets.PACKAGECLOUD_REPOSITORY }}
-#          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
+      - name: Build the Mender packages
+        run: ./.github/scripts/build-mender-packages "${{ inputs.package_name }}" "${{ inputs.package_version }}" "${{ inputs.distribution_release }}"
+      - name: Upload package to packagecloud repository
+        run: ./.github/scripts/upload-mender-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}" "${{ inputs.package_name }}"
+        env:
+          PACKAGECLOUD_USER: ${{ secrets.PACKAGECLOUD_USER }}
+          PACKAGECLOUD_REPOSITORY: ${{ secrets.PACKAGECLOUD_REPOSITORY }}
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}

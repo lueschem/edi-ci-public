@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Build a Mender package
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+if [[ $# -ne 3 ]]
+then
+    >&2 echo "Error: This script expects three parameters:"
+    >&2 echo "       build-mender-packages PACKAGE_NAME PACKAGE_VERSION DEBIAN_RELEASE"
+    exit 1
+fi
+
+PACKAGE_NAME="${1}"
+PACKAGE_VERSION="${2}"
+DEBIAN_RELEASE="${3}"
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "${SCRIPTDIR}/../../mender-dist-packages"
+
+declare -a architectures=("amd64" "armhf" "arm64")
+
+if [ "${PACKAGE_NAME}" == "mender-configure" ]
+then
+    declare -a architectures=("amd64")
+fi
+
+for arch in "${architectures[@]}"
+do
+    ./docker-build-image debian "${DEBIAN_RELEASE}" "${arch}"
+done
+
+./docker-build-package debian "${DEBIAN_RELEASE}" amd64 "${PACKAGE_NAME}" "${PACKAGE_VERSION}" true
+
+for arch in "${architectures[@]}"
+do
+    ./docker-build-package debian "${DEBIAN_RELEASE}" "${arch}" "${PACKAGE_NAME}" "${PACKAGE_VERSION}"
+done
+
+echo "========"
+echo "Success!"
+echo "========"

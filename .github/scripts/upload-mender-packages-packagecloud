@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Upload a Debian kernel package located in the build-output directory to PackageCloud
+
+# Usage: upload-kernel-packages-packagecloud REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION DISTRIBUTION_RELEASE
+# Example: upload-kernel-packages-packagecloud get-edi debian debian buster
+
+set -o nounset
+set -o errexit
+set -o pipefail
+
+if [[ $# -ne 5 ]]
+then
+    >&2 echo "Error: This script expects five parameters:"
+    >&2 echo "       upload-mender-packages-packagecloud REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION DISTRIBUTION_RELEASE PACKAGE_NAME"
+    exit 1
+fi
+
+if [[ $EUID -eq 0 ]]
+then
+    >&2 echo "Error: This script must not be run as root."
+    exit 1
+fi
+
+REPOSITORY_USER="${1}"
+REPOSITORY_NAME="${2}"
+DISTRIBUTION="${3}"
+DISTRIBUTION_RELEASE="${4}"
+PACKAGE_NAME="${5}"
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "${SCRIPT_DIR}/../../mender-dist-packages"
+
+declare -a architectures=("amd64" "armhf" "arm64")
+
+if [ "${PACKAGE_NAME}" == "mender-configure" ]
+then
+    declare -a architectures=("amd64")
+fi
+
+sudo gem install package_cloud
+
+push_package()
+{
+    echo "Deploying package ${PACKAGE} to ${UPLOAD_PATH}."
+    package_cloud push "${UPLOAD_PATH}" "${PACKAGE}"
+}
+
+UPLOAD_PATH="${REPOSITORY_USER}/${REPOSITORY_NAME}/${DISTRIBUTION}/${DISTRIBUTION_RELEASE}"
+
+for arch in "${architectures[@]}"
+do
+    pushd "output/opensource/debian-${DISTRIBUTION_RELEASE}-${arch}"
+    PACKAGE=$(find . -name "${PACKAGE_NAME}_*.deb")
+    push_package
+
+    if [ "${arch}" == "amd64" ]
+    then
+        PACKAGE=$(find . -name "${PACKAGE_NAME}_*.dsc")
+        push_package
+    fi
+    popd
+done
