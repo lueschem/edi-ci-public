@@ -3,7 +3,6 @@ import pytest
 
 @pytest.mark.parametrize("name", ["haveged",
                                   "systemd-timesyncd",
-                                  "systemd-resolved",
                                   "systemd-journald",
                                   "mender-client",
                                   "mender-connect",
