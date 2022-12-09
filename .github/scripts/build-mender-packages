@@ -21,7 +21,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "${SCRIPTDIR}/../../mender-dist-packages"
 
-declare -a architectures=("amd64" "armhf" "arm64")
+declare -a architectures=("amd64" "arm64")
 
 if [ "${PACKAGE_NAME}" == "mender-configure" ]
 then
