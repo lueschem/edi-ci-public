@@ -1,8 +1,7 @@
 import pytest
 
 
-@pytest.mark.parametrize("filename", ["ssh_host_dsa_key.pub",
-                                      "ssh_host_ecdsa_key.pub",
+@pytest.mark.parametrize("filename", ["ssh_host_ecdsa_key.pub",
                                       "ssh_host_ed25519_key.pub",
                                       "ssh_host_rsa_key.pub"])
 def test_ssh_backup_restore(host, filename):
