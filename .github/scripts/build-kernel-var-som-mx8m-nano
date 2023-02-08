@@ -39,7 +39,7 @@ export DTB="freescale/imx8mn-var-som-symphony.dtb
 	          freescale/imx8mn-var-som-symphony-m7.dtb
 	          freescale/imx8mn-var-som-inmate.dtb"
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- imx8_var_defconfig
-make -j $(nproc) KBUILD_IMAGE=arch/arm64/boot/Image ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ${DTB} deb-pkg
+make -j 1 KBUILD_IMAGE=arch/arm64/boot/Image ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ${DTB} deb-pkg
 
 BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
 mkdir -p "${BUILD_OUTPUT}"
