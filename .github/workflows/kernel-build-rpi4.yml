@@ -5,7 +5,7 @@ on:
       distribution_release:
         description: 'Debian distribution release'
         required: true
-        default: 'bullseye'
+        default: 'bookworm'
       git_tag:
         description: 'Git tag of kernel (e.g. 1.20220830)'
         required: true

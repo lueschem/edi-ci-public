@@ -5,7 +5,7 @@ on:
       distribution_release:
         description: 'Debian distribution release'
         required: true
-        default: 'bullseye'
+        default: 'bookworm'
       kernel_branch:
         description: 'Variscite kernel branch name (e.g. lf-5.10.y_var04)'
         required: true
