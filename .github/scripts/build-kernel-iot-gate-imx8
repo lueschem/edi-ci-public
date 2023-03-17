@@ -41,6 +41,7 @@ git config user.email "lueschem@gmail.com"
 git config user.name "Matthias Luescher"
 git checkout -b linux-compulab
 git am "${PATCHES}"/*.patch
+git am "${SCRIPTDIR}"/../patches/iot-gate-imx8/*.patch
 
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- iot-gate-imx8_defconfig
 make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- deb-pkg

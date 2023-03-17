@@ -1,0 +1,24 @@
+From 95e7635548e65a8cd8395777c7f6699cee230535 Mon Sep 17 00:00:00 2001
+From: Matthias Luescher <lueschem@gmail.com>
+Date: Fri, 17 Mar 2023 21:30:59 +0100
+Subject: [PATCH] Enable support for miscellaneous binary formats.
+
+---
+ arch/arm64/configs/iot-gate-imx8_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/iot-gate-imx8_defconfig b/arch/arm64/configs/iot-gate-imx8_defconfig
+index 060cec89025a..651dd53a364b 100644
+--- a/arch/arm64/configs/iot-gate-imx8_defconfig
++++ b/arch/arm64/configs/iot-gate-imx8_defconfig
+@@ -83,6 +83,7 @@ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ CONFIG_BLK_DEV_THROTTLING=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
++CONFIG_BINFMT_MISC=m
+ CONFIG_KSM=y
+ CONFIG_MEMORY_FAILURE=y
+ CONFIG_TRANSPARENT_HUGEPAGE=y
+-- 
+2.34.1
+

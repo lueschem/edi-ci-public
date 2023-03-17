@@ -22,9 +22,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPT_DIR}/../../mender-dist-packages"
 
 # Overrule the Dockerfile in order to get a pure Debian armhf environment (not compatible with Raspberry Pi Zero):
-patch Dockerfile "${SCRIPT_DIR}/../patches/Dockerfile.patch"
+patch Dockerfile "${SCRIPT_DIR}/../patches/mender/Dockerfile.patch"
 # Take standard Debian toolchain:
-patch mender-deb-package "${SCRIPT_DIR}/../patches/mender-deb-package.patch"
+patch mender-deb-package "${SCRIPT_DIR}/../patches/mender/mender-deb-package.patch"
 
 declare -a architectures=("amd64" "armhf" "arm64")
 
