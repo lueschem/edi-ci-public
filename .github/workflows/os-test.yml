@@ -13,7 +13,7 @@ on:
       configuration:
         description: 'OS image configuration'
         required: true
-        default: 'pi4-bullseye-arm64-gitops.yml'
+        default: 'pi4-gitops.yml'
       device_id:
         description: 'Mender device ID'
         required: true
