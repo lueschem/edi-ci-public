@@ -34,6 +34,8 @@ cd "${KERNEL_BRANCH}"
 git clone -b "${KERNEL_BRANCH}" --single-branch https://github.com/varigit/linux-imx.git
 cd linux-imx
 
+git am "${SCRIPTDIR}"/../patches/var-som-mx8m-nano/*.patch
+
 export DTB="freescale/imx8mn-var-som-symphony.dtb
 	          freescale/imx8mn-var-som-symphony-root.dtb
 	          freescale/imx8mn-var-som-symphony-m7.dtb
