@@ -33,7 +33,8 @@ cd "${KERNEL_BRANCH}"
 
 git clone -b "${KERNEL_BRANCH}" --single-branch https://github.com/varigit/linux-imx.git
 cd linux-imx
-
+git config user.email "lueschem@gmail.com"
+git config user.name "Matthias Luescher"
 git am "${SCRIPTDIR}"/../patches/var-som-mx8m-nano/*.patch
 
 export DTB="freescale/imx8mn-var-som-symphony.dtb
