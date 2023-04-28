@@ -84,6 +84,7 @@ ssh -F "${SSH_CONFIG}" "${DEVICE_USER}@${DEVICE_IP}" true
 trap unexpected_exit EXIT
 
 echo "Removing sudo password on ${DEVICE_IP}."
+# shellcheck disable=SC2087
 ssh -F "${SSH_CONFIG}" "${DEVICE_USER}@${DEVICE_IP}" > /dev/null 2>&1 << EOF
     echo "${DEVICE_USER} ALL=(ALL) NOPASSWD: ALL" > pytest_no_passwd
     echo "${DEVICE_PASSWORD}" | sudo -S chown root:root pytest_no_passwd
