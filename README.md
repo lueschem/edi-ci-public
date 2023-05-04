@@ -2,7 +2,7 @@
 
 Continuous integration for edi project configurations based on GitHub actions.
 
-Currently edi-ci is capable of
+Currently, edi-ci is capable of
 
 - building OS images based on an edi project configuration
 - dispatching the OS images to embedded devices
