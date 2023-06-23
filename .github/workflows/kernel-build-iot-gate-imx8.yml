@@ -7,10 +7,13 @@ on:
         required: true
         default: 'bookworm'
       nxp_release:
-        description: 'NXP release name (e.g. lf-5.10.y)'
+        description: 'NXP release branch (e.g. lf-5.15.y)'
+        required: true
+      nxp_tag:
+        description: 'NXP release tag (e.g. lf-5.15.32-2.0.0)'
         required: true
       cpl_branch:
-        description: 'Compulab branch name (e.g. iot-gate-imx8_r3.1)'
+        description: 'Compulab branch name (e.g. iot-gate-imx8_r3.2.1)'
         required: true
 
 jobs:
@@ -29,7 +32,7 @@ jobs:
       - name: Pull docker container
         run: docker pull debian:"${{ inputs.distribution_release }}"
       - name: Run build job within docker container
-        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-iot-gate-imx8 ${{ inputs.nxp_release }} ${{ inputs.cpl_branch }}"
+        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-iot-gate-imx8 ${{ inputs.nxp_release }} ${{ inputs.nxp_tag }} ${{ inputs.cpl_branch }}"
       - name: Upload package to packagecloud repository
         run: ./.github/scripts/upload-kernel-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
         env:

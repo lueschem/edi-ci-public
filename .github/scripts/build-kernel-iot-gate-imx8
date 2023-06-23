@@ -19,8 +19,10 @@ then
     exit 1
 fi
 
+MACHINE=iot-gate-imx8
 NXP_RELEASE="${1}"
-CPL_BRANCH="${2}"
+NXP_TAG="${2}"
+CPL_BRANCH="${3}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -33,17 +35,17 @@ mkdir -p "${CPL_BRANCH}"
 cd "${CPL_BRANCH}"
 git clone -b "${CPL_BRANCH}" https://github.com/compulab-yokneam/meta-bsp-imx8mm.git
 PATCHES=$(pwd)/meta-bsp-imx8mm/recipes-kernel/linux/compulab/imx8mm
-# Workaround: Looks like an unrelated patch:
-rm -f "${PATCHES}/0999-firmware-Add-the-brcm-firmware-to-the.patch"
 git clone -b "${NXP_RELEASE}" --single-branch https://github.com/nxp-imx/linux-imx.git
 cd linux-imx
 git config user.email "lueschem@gmail.com"
 git config user.name "Matthias Luescher"
+
+git checkout "${NXP_TAG}"
 git checkout -b linux-compulab
 git am "${PATCHES}"/*.patch
 git am "${SCRIPTDIR}"/../patches/iot-gate-imx8/*.patch
 
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- iot-gate-imx8_defconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- cl-imx8m-mini_defconfig ${MACHINE}.config binfmt.config
 make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- deb-pkg
 
 BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"

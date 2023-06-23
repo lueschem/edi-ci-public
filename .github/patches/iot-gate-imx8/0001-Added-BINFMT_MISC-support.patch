@@ -1,0 +1,20 @@
+From ffbef822dd8f701cdca9522a2571a79928dd5245 Mon Sep 17 00:00:00 2001
+From: Matthias Luescher <lueschem@gmail.com>
+Date: Fri, 23 Jun 2023 11:22:24 +0200
+Subject: [PATCH] Added BINFMT_MISC support.
+
+---
+ arch/arm64/configs/binfmt.config | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 arch/arm64/configs/binfmt.config
+
+diff --git a/arch/arm64/configs/binfmt.config b/arch/arm64/configs/binfmt.config
+new file mode 100644
+index 000000000000..20754804bf50
+--- /dev/null
++++ b/arch/arm64/configs/binfmt.config
+@@ -0,0 +1 @@
++CONFIG_BINFMT_MISC=m
+-- 
+2.34.1
+
