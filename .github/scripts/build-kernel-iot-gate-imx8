@@ -35,7 +35,7 @@ git clone -b "${CPL_BRANCH}" https://github.com/compulab-yokneam/meta-bsp-imx8mm
 PATCHES=$(pwd)/meta-bsp-imx8mm/recipes-kernel/linux/compulab/imx8mm
 # Workaround: Looks like an unrelated patch:
 rm -f "${PATCHES}/0999-firmware-Add-the-brcm-firmware-to-the.patch"
-git clone -b "${NXP_RELEASE}" --single-branch https://source.codeaurora.org/external/imx/linux-imx.git
+git clone -b "${NXP_RELEASE}" --single-branch https://github.com/nxp-imx/linux-imx.git
 cd linux-imx
 git config user.email "lueschem@gmail.com"
 git config user.name "Matthias Luescher"
