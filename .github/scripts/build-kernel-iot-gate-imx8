@@ -12,10 +12,10 @@ then
     exit 1
 fi
 
-if [[ $# -ne 2 ]]
+if [[ $# -ne 3 ]]
 then
-    >&2 echo "Error: This script expects two parameters:"
-    >&2 echo "       build-kernel-iot-gate-imx8 NXP_RELEASE CPL_BRANCH"
+    >&2 echo "Error: This script expects three parameters:"
+    >&2 echo "       build-kernel-iot-gate-imx8 NXP_RELEASE NXP_TAG CPL_BRANCH"
     exit 1
 fi
 
