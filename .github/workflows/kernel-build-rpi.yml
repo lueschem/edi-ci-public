@@ -1,4 +1,4 @@
-name: Build kernel for Raspberry Pi 4
+name: Build kernel for Raspberry Pi
 on:
   workflow_dispatch:
     inputs:
@@ -7,8 +7,10 @@ on:
         required: true
         default: 'bookworm'
       git_tag:
-        description: 'Git tag of kernel (e.g. 1.20220830)'
+        description: 'Git tag of kernel (e.g. stable_20231123)'
         required: true
+      kernel_defconfig:
+        description: 'Kernel defconfig (e.g. bcm2711_defconfig or bcm2712_defconfig)'
 
 jobs:
   build:
@@ -26,7 +28,7 @@ jobs:
       - name: Pull docker container
         run: docker pull debian:"${{ inputs.distribution_release }}"
       - name: Run build job within docker container
-        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-rpi4 ${{ inputs.git_tag }}"
+        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-rpi ${{ inputs.git_tag }} ${{ inputs.kernel_defconfig }}"
       - name: Upload package to packagecloud repository
         run: ./.github/scripts/upload-kernel-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
         env:
