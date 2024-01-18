@@ -17,6 +17,16 @@ on:
       device_id:
         description: 'Mender device ID'
         required: true
+      runner_label:
+        description: 'label to select runner'
+        required: true
+        type: choice
+        options:
+        - ARM64
+        - ARM32
+        - rpi4
+        - rpi5
+        default: ARM64
       run_tests:
         type: boolean
         description: 'Test new OS image'
@@ -25,7 +35,7 @@ on:
 
 jobs:
   build:
-    runs-on: [self-hosted, Linux, ARM64]
+    runs-on: [self-hosted, Linux, "${{ inputs.runner_label }}"]
     steps:
       - name: Print summary of job
         run: echo "${{ inputs.repository }}/${{ inputs.repository_version }}:${{ inputs.configuration }} --> ${{ inputs.device_id }} (run_tests=${{ inputs.run_tests }})"
