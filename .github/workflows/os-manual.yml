@@ -1,0 +1,47 @@
+name: "Manual: Build, dispatch and test OS image"
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'edi project repository'
+        required: true
+        default: 'edi-pi'
+      repository_version:
+        description: 'branch/version of edi project repository'
+        required: true
+        default: 'master'
+      configuration:
+        description: 'OS image configuration'
+        required: true
+        default: 'pi4-gitops.yml'
+      device_id:
+        description: 'Mender device ID'
+        required: true
+      runner_label:
+        description: 'label to select runner'
+        required: true
+        type: choice
+        options:
+        - ARM64
+        - ARM32
+        - rpi4
+        - rpi5
+        default: ARM64
+      run_tests:
+        type: boolean
+        description: 'Test new OS image'
+        required: true
+        default: true
+
+jobs:
+  os:
+    uses: ./.github/workflows/os-workflow.yml
+    with:
+      repository: ${{ inputs.repository }}
+      repository_version: ${{ inputs.repository_version }}
+      configuration: ${{ inputs.configuration }}
+      device_id: ${{ inputs.device_id }}
+      runner_label: ${{ inputs.runner_label }}
+      run_tests: ${{ inputs.run_tests }}
+    secrets: inherit
+
