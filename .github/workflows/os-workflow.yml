@@ -33,7 +33,7 @@ on:
         default: true
 
 jobs:
-  build:
+  build-dispatch-test:
     runs-on: [self-hosted, Linux, "${{ inputs.runner_label }}"]
     steps:
       - name: Print summary of job
