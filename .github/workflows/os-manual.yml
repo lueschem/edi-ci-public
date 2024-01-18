@@ -1,4 +1,5 @@
-name: "Manual: Build, dispatch and test OS image"
+name: "Build, dispatch and test OS image"
+
 on:
   workflow_dispatch:
     inputs:
