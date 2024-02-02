@@ -25,8 +25,8 @@ jobs:
             run_tests: false
           - repository: edi-pi
             repository_version: master
-            configuration: pi4-gitops.yml
-            build_command: 'sudo edi -v image create'
+            configuration: pi4-gitops-rootless.yml
+            build_command: 'edi -v project make'
             device_id: 3fb4632b-96b9-475d-ac89-02255bd15b6f
             runner_label: ARM64
             run_tests: true
