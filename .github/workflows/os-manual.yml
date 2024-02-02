@@ -15,6 +15,10 @@ on:
         description: 'OS image configuration'
         required: true
         default: 'pi4-gitops.yml'
+      build_command:
+        description: 'edi build command'
+        required: true
+        default: 'sudo edi -v image create'
       device_id:
         description: 'Mender device ID'
         required: true
@@ -41,6 +45,7 @@ jobs:
       repository: ${{ inputs.repository }}
       repository_version: ${{ inputs.repository_version }}
       configuration: ${{ inputs.configuration }}
+      build_command: ${{ inputs.build_command }}
       device_id: ${{ inputs.device_id }}
       runner_label: ${{ inputs.runner_label }}
       run_tests: ${{ inputs.run_tests }}
