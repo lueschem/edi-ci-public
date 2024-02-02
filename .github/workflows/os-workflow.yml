@@ -66,7 +66,7 @@ jobs:
         env:
           CI_CD_SSH_PUB_KEY: ${{ secrets.CI_CD_SSH_PUB_KEY }}
       - name: Create the OS artifact
-        run: cd ${{ inputs.repository }} && ${{ build_command }} ${{ inputs.configuration }}
+        run: cd ${{ inputs.repository }} && ${{ inputs.build_command }} ${{ inputs.configuration }}
       - name: Dispatch the OS artifact to the device
         run: ./mender-api dispatch ${{ inputs.device_id }} ${{ inputs.repository }}/artifacts/$(echo "${{ inputs.configuration }}" | sed 's/yml$/mender/g')
         env:
@@ -78,5 +78,5 @@ jobs:
           DEVICE_SECRETS: ${{ secrets.DEVICE_SECRETS }}
         if: inputs.run_tests
       - name: Perform cleanup
-        run: cd ${{ inputs.repository }} && ${{ build_command }} --recursive-clean 10 ${{ inputs.configuration }} ; sudo rm -rf ${{ inputs.repository }}
+        run: cd ${{ inputs.repository }} && ${{ inputs.build_command }} --recursive-clean 10 ${{ inputs.configuration }} ; sudo rm -rf ${{ inputs.repository }}
         if: always()
