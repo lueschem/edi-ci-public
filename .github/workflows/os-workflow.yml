@@ -52,6 +52,7 @@ jobs:
           repository: '${{ github.repository_owner }}/${{ inputs.repository }}'
           ref: '${{ inputs.repository_version }}'
           path: '${{ inputs.repository }}'
+          submodules: recursive
       - name: Apply the correct Mender tenant token
         run: |
           echo "mender_tenant_token: \"${MENDER_TENANT_TOKEN}\"" > ${{ inputs.repository }}/configuration/mender/mender_custom.yml
