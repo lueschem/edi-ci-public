@@ -45,9 +45,9 @@ jobs:
       - name: Print summary of job
         run: echo "${{ inputs.repository }}/${{ inputs.repository_version }}:${{ inputs.configuration }} --> ${{ inputs.device_id }} (run_tests=${{ inputs.run_tests }})"
       - name: Check out the source code of this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Check out the source code of the edi project repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: '${{ github.repository_owner }}/${{ inputs.repository }}'
           ref: '${{ inputs.repository_version }}'
