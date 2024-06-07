@@ -29,7 +29,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPTDIR}/../.."
 
 DEBIAN_FRONTEND=noninteractive apt-get update > /dev/null
-DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio libncurses5-dev bison libssl-dev wget lzop rsync
+DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio libncurses5-dev bison libssl-dev wget lzop rsync debhelper fakeroot
 
 mkdir -p "${CPL_BRANCH}"
 cd "${CPL_BRANCH}"
