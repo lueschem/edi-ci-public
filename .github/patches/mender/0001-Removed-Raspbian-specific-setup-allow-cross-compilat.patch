@@ -1,0 +1,197 @@
+From 5dd05921a17a02366a0624cd233c2179f63ba4de Mon Sep 17 00:00:00 2001
+From: Matthias Luescher <lueschem@gmail.com>
+Date: Fri, 28 Jun 2024 13:50:26 +0200
+Subject: [PATCH] Removed Raspbian specific setup, allow cross compilation on
+ arm64.
+
+---
+ docker-build-package | 26 ++++++++--------
+ mender-deb-package   | 70 +++++++++++++++++++++++++-------------------
+ 2 files changed, 52 insertions(+), 44 deletions(-)
+
+diff --git a/docker-build-package b/docker-build-package
+index eafb1a4..01f22fb 100755
+--- a/docker-build-package
++++ b/docker-build-package
+@@ -16,7 +16,7 @@
+ 
+ set -e
+ 
+-IMAGE_NAME_PREFIX=registry.gitlab.com/northern.tech/mender/mender-test-containers:mender-dist-packages-builder
++IMAGE_NAME_PREFIX=mender-dist-packages-builder
+ 
+ declare -A mender_client_props=(
+     [recipe_name]="mender-client"
+@@ -138,8 +138,10 @@ if [ $commercial = "true" -a -z "${MENDER_PRIVATE_REPO_ACCESS_TOKEN}" ]; then
+     exit 1
+ fi
+ 
+-if [ "$arch_indep" = "true" -a "$ARCH" != "amd64" ]; then
+-    # Architecture independent packages are built only on amd64 build host
++HOST_ARCHITECTURE="$(dpkg --print-architecture)"
++
++if [ "$arch_indep" = "true" -a "$ARCH" != "${HOST_ARCHITECTURE}" ]; then
++    # Architecture independent packages are built only once
+     echo "Not building arch independent package $recipe_name on architecture $ARCH"
+     exit 0
+ fi
+@@ -155,31 +157,27 @@ orig_dir="output/orig"
+ 
+ mkdir -p "${output_dir}" "${orig_dir}"
+ 
+-if [ "$arch_indep" = "true" -a "$ARCH" = "amd64" ]; then
+-    # On amd64, build architecture independent packages.
++if [ "$arch_indep" = "true" -a "$ARCH" = "${HOST_ARCHITECTURE}" ]; then
++    # On host arch, build architecture independent packages.
+     BUILD_TYPE=all
+-elif [ "$arch_indep" = "false" -a "$ARCH" = "amd64" ]; then
+-    # On amd64, build both architecture dependent and independent packages.
++elif [ "$arch_indep" = "false" -a "$ARCH" = "${HOST_ARCHITECTURE}" ]; then
++    # On host arch, build both architecture dependent and independent packages.
+     BUILD_TYPE=binary
+ else
+     # On others, build only architecture dependent packages.
+     BUILD_TYPE=any
+ fi
+ 
+-if [ "$commercial" != "true" -a "$ARCH" = "amd64" ]; then
++if [ "$commercial" != "true" -a "$ARCH" = "${HOST_ARCHITECTURE}" ]; then
+     echo "Including source packages in the build."
+     BUILD_TYPE="source,${BUILD_TYPE}"
+ fi
+ 
+ PLATFORM=""
+ 
+-if [ "$ARCH" = "armhf" -a "$DISTRO" = "debian" ]; then
+-    PLATFORM="--platform=linux/arm/v6"
+-fi
+-
+ echo
+ 
+-docker run --rm \
++podman run --rm \
+         --volume $(pwd)/recipes:/recipes \
+         --volume $(pwd)/${output_dir}:/output \
+         --volume $(pwd)/${orig_dir}:/orig \
+@@ -188,7 +186,7 @@ docker run --rm \
+         --env MENDER_PRIVATE_GPG_KEY_BUILD \
+         --env OVERRIDE_DEBIAN_SUFFIX \
+         ${PLATFORM} \
+-        ${IMAGE_NAME_PREFIX}-${DISTRO}-${RELEASE}-${ARCH}-${IMAGE_VERSION:-master} \
++        ${IMAGE_NAME_PREFIX}-${DISTRO}-${RELEASE} \
+         /script \
+         ${recipe_name} \
+         ${BUILD_TYPE} \
+diff --git a/mender-deb-package b/mender-deb-package
+index 291de2c..d410429 100755
+--- a/mender-deb-package
++++ b/mender-deb-package
+@@ -61,11 +61,8 @@ checkout_repo() {
+ 
+ install_go() {
+   local GOLANG_VERSION=1.21.1
+-  local GOLANG_ARCH=amd64
++  local GOLANG_ARCH=${HOST_ARCHITECTURE}
+   local golang_version_set
+-  if [ $ARCH = "armhf" -a $OS_DISTRO = "debian" ]; then
+-    local GOLANG_ARCH=armv6l
+-  fi
+ 
+   golang_version_set=$(sed -n '/[^ ]*GOLANG_VERSION:[ "0-9]/{s/.*GOLANG_VERSION:[ ]*\(["0-9\.]*\).*/\1/p;q}' .gitlab-ci.yml)
+   golang_version_set=${golang_version_set//\"/}
+@@ -232,46 +229,57 @@ build_packages() {
+ 
+   case "$ARCH" in
+     amd64)
+-      # Native build (amd64)
+-      dpkg-buildpackage \
+-        ${sign_flags} \
+-        ${dpkg_build_ignore_flag} \
+-        --build=$DEB_BUILD_TYPE
+-      ;;
+-
+-    armhf)
+-      if [ "$OS_DISTRO" = "debian" ]; then
+-        # Native build (emulated ARM v6)
+-        dpkg-buildpackage \
+-          ${sign_flags} \
+-          ${dpkg_build_ignore_flag} \
+-          --build=$DEB_BUILD_TYPE
+-      else
+-        # Debian ARM 32bit toolchain
+-        CROSS_COMPILE="arm-linux-gnueabihf" \
++      if [ "$ARCH" != "${HOST_ARCHITECTURE}" ]; then
++        CROSS_COMPILE="x86_64-linux-gnu" \
+                      CC="$CROSS_COMPILE-gcc" \
+-                     PKG_CONFIG_PATH="/usr/lib/arm-linux-gnueabihf/pkgconfig/" \
+-                     GOARCH=arm \
++                     PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig/" \
++                     GOARCH=amd64 \
+                      dpkg-buildpackage \
+-                     --target-arch armhf \
++                     --target-arch amd64 \
+                      ${sign_flags} \
+                      ${dpkg_build_ignore_flag} \
+                      --build=$DEB_BUILD_TYPE
++      else
++        # Native build (amd64)
++        dpkg-buildpackage \
++          ${sign_flags} \
++          ${dpkg_build_ignore_flag} \
++          --build=$DEB_BUILD_TYPE
+       fi
+       ;;
+ 
+-    arm64)
+-      # Debian ARM 64bit toolchain
+-      CROSS_COMPILE="aarch64-linux-gnu" \
++    armhf)
++      # Debian ARM 32bit toolchain
++      CROSS_COMPILE="arm-linux-gnueabihf" \
+                    CC="$CROSS_COMPILE-gcc" \
+-                   PKG_CONFIG_PATH="/usr/lib/aarch64-linux-gnu/pkgconfig/" \
+-                   GOARCH=arm64 \
++                   PKG_CONFIG_PATH="/usr/lib/arm-linux-gnueabihf/pkgconfig/" \
++                   GOARCH=arm \
+                    dpkg-buildpackage \
+-                   --target-arch arm64 \
++                   --target-arch armhf \
+                    ${sign_flags} \
+                    ${dpkg_build_ignore_flag} \
+                    --build=$DEB_BUILD_TYPE
+       ;;
++
++    arm64)
++      if [ "$ARCH" != "${HOST_ARCHITECTURE}" ]; then
++        # Debian ARM 64bit toolchain
++        CROSS_COMPILE="aarch64-linux-gnu" \
++                     CC="$CROSS_COMPILE-gcc" \
++                     PKG_CONFIG_PATH="/usr/lib/aarch64-linux-gnu/pkgconfig/" \
++                     GOARCH=arm64 \
++                     dpkg-buildpackage \
++                     --target-arch arm64 \
++                     ${sign_flags} \
++                     ${dpkg_build_ignore_flag} \
++                     --build=$DEB_BUILD_TYPE
++      else
++        dpkg-buildpackage \
++          ${sign_flags} \
++          ${dpkg_build_ignore_flag} \
++          --build=$DEB_BUILD_TYPE
++      fi
++      ;;
+   esac
+ }
+ 
+@@ -298,6 +306,8 @@ copy_deb_packages() {
+ # Run script #
+ ##############
+ 
++HOST_ARCHITECTURE="$(dpkg --print-architecture)"
++
+ verify_output_directory_exists
+ 
+ verify_script_arguments "$@"
+-- 
+2.43.0
+

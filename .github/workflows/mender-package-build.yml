@@ -2,10 +2,10 @@ name: Build mender package
 on:
   workflow_dispatch:
     inputs:
-      distribution_release:
-        description: 'Debian distribution release'
+      edi_pi_repository_branch:
+        description: 'Branch of edi-pi repository'
         required: true
-        default: 'bookworm'
+        default: 'master'
       package_name:
         description: 'Name of package (e.g. mender-client, mender-connect or mender-configure)'
         required: true
@@ -21,6 +21,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: '0'
+      - name: Check out the edi-pi repository
+        uses: actions/checkout@v4
+        with:
+          repository: lueschem/edi-pi
+          ref: ${{ inputs.edi_pi_repository_branch }}
+          path: edi-pi
       - name: Check out the mender-dist-packages repository
         uses: actions/checkout@v4
         with:
@@ -33,9 +39,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build the Mender packages
-        run: ./.github/scripts/build-mender-packages "${{ inputs.package_name }}" "${{ inputs.package_version }}" "${{ inputs.distribution_release }}"
+        run: ./.github/scripts/build-mender-packages "${{ inputs.package_name }}" "${{ inputs.package_version }}"
       - name: Upload package to packagecloud repository
-        run: ./.github/scripts/upload-mender-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}" "${{ inputs.package_name }}"
+        run: ./.github/scripts/upload-mender-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.package_name }}"
         env:
           PACKAGECLOUD_USER: ${{ secrets.PACKAGECLOUD_USER }}
           PACKAGECLOUD_REPOSITORY: ${{ secrets.PACKAGECLOUD_REPOSITORY }}

@@ -1,18 +1,15 @@
 #!/bin/bash
 
-# Upload a Debian kernel package located in the build-output directory to PackageCloud
-
-# Usage: upload-kernel-packages-packagecloud REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION DISTRIBUTION_RELEASE
-# Example: upload-kernel-packages-packagecloud get-edi debian debian buster
+# Upload a Mender package to PackageCloud
 
 set -o nounset
 set -o errexit
 set -o pipefail
 
-if [[ $# -ne 5 ]]
+if [[ $# -ne 4 ]]
 then
-    >&2 echo "Error: This script expects five parameters:"
-    >&2 echo "       upload-mender-packages-packagecloud REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION DISTRIBUTION_RELEASE PACKAGE_NAME"
+    >&2 echo "Error: This script expects four parameters:"
+    >&2 echo "       upload-mender-packages-packagecloud REPOSITORY_USER REPOSITORY_NAME DISTRIBUTION PACKAGE_NAME"
     exit 1
 fi
 
@@ -25,39 +22,47 @@ fi
 REPOSITORY_USER="${1}"
 REPOSITORY_NAME="${2}"
 DISTRIBUTION="${3}"
-DISTRIBUTION_RELEASE="${4}"
-PACKAGE_NAME="${5}"
+PACKAGE_NAME="${4}"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "${SCRIPT_DIR}/../../edi-pi"
+EDI_PI_CONFIG_NAME=pi-cross-dev-v2
+DISTRIBUTION_RELEASE=$(edi project make --config ${EDI_PI_CONFIG_NAME}.yml | grep debian_distribution_release | cut -d':' -f 2 | xargs)
+
 cd "${SCRIPT_DIR}/../../mender-dist-packages"
 
 declare -a architectures=("amd64" "armhf" "arm64")
 
 if [ "${PACKAGE_NAME}" == "mender-configure" ]
 then
-    declare -a architectures=("amd64")
+    declare -a architectures=("$(dpkg --print-architecture)")
 fi
 
 sudo gem install package_cloud
 
-push_package()
+push_packages()
 {
-    echo "Deploying package ${PACKAGE} to ${UPLOAD_PATH}."
-    package_cloud push "${UPLOAD_PATH}" "${PACKAGE}"
+    for package in "${PACKAGES[@]}"
+    do
+        echo "Deploying package ${package} to ${UPLOAD_PATH}."
+        package_cloud push "${UPLOAD_PATH}" "${package}"
+    done
 }
+
 
 UPLOAD_PATH="${REPOSITORY_USER}/${REPOSITORY_NAME}/${DISTRIBUTION}/${DISTRIBUTION_RELEASE}"
 
 for arch in "${architectures[@]}"
 do
     pushd "output/opensource/debian-${DISTRIBUTION_RELEASE}-${arch}"
-    PACKAGE=$(find . -name "${PACKAGE_NAME}_*.deb")
-    push_package
+    PACKAGES=( $(find . -name "*.deb") )
+    push_packages
 
-    if [ "${arch}" == "amd64" ]
+    if [ "${arch}" == "$(dpkg --print-architecture)" ]
     then
-        PACKAGE=$(find . -name "${PACKAGE_NAME}_*.dsc")
-        push_package
+        PACKAGES=( $(find . -name "*.dsc") )
+        push_packages
     fi
     popd
 done

@@ -131,3 +131,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /config/device_secrets.json
+edi-pi/
+mender-dist-packages/
