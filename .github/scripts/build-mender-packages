@@ -24,11 +24,15 @@ EDI_PI_CONFIG_NAME=pi-cross-dev-v2
 DEBIAN_RELEASE=$(edi project make --config ${EDI_PI_CONFIG_NAME}.yml | grep debian_distribution_release | cut -d':' -f 2 | xargs)
 EXPECTED_PODMAN_IMAGE=mender-dist-packages-builder-debian-${DEBIAN_RELEASE}
 
+# Check for the existance of podman:
+podman version > /dev/null
+
 if ! podman image exists ${EXPECTED_PODMAN_IMAGE}
 then
     edi -v project make ${EDI_PI_CONFIG_NAME}.yml
     source artifacts/${EDI_PI_CONFIG_NAME}_manifest
     podman tag ${podman_image} mender-dist-packages-builder-debian-${DEBIAN_RELEASE}:latest
+    edi -v project make --recursive-clean 3 ${EDI_PI_CONFIG_NAME}.yml
 fi
 
 
