@@ -3,11 +3,11 @@ on:
   workflow_dispatch:
     inputs:
       edi_pi_repository_branch:
-        description: 'Branch of edi-pi repository'
+        description: 'Branch of edi-pi repository (required for podman build container)'
         required: true
         default: 'master'
       package_name:
-        description: 'Name of package (e.g. mender-client, mender-connect or mender-configure)'
+        description: 'Name of package (e.g. mender-client, mender-client4, mender-connect, mender-flash or mender-configure)'
         required: true
       package_version:
         description: 'Version of package (e.g. 2.1.0)'
