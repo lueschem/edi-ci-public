@@ -20,7 +20,7 @@ jobs:
             repository_version: master
             configuration: pi3-gitops.yml
             build_command: 'sudo edi -v image create'
-            device_id: 50a28c2e-3ee8-4559-a5b9-3ce47c881c5d
+            device_id: f4580afc-7195-4c8b-b35a-e0248e6bd894
             runner_label: ARM64
             run_tests: false
           - repository: edi-pi
