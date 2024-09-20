@@ -1,6 +1,6 @@
-From d04e8209c311334c83dd7c12519cbe25cdc7d5f1 Mon Sep 17 00:00:00 2001
+From 5400f426bc7f1660cb97e467d684b8ed2a0e56a9 Mon Sep 17 00:00:00 2001
 From: Matthias Luescher <lueschem@gmail.com>
-Date: Fri, 17 Mar 2023 21:37:18 +0100
+Date: Fri, 20 Sep 2024 07:33:13 +0000
 Subject: [PATCH] Enable support for miscellaneous binary formats.
 
 ---
@@ -8,17 +8,17 @@ Subject: [PATCH] Enable support for miscellaneous binary formats.
  1 file changed, 1 insertion(+)
 
 diff --git a/arch/arm64/configs/imx8_var_defconfig b/arch/arm64/configs/imx8_var_defconfig
-index 28689e6b78d1..50a7fceccb65 100644
+index 350d677fd454..71c04bcbf7fa 100644
 --- a/arch/arm64/configs/imx8_var_defconfig
 +++ b/arch/arm64/configs/imx8_var_defconfig
-@@ -96,6 +96,7 @@ CONFIG_MODULE_UNLOAD=y
+@@ -80,6 +80,7 @@ CONFIG_MODULE_UNLOAD=y
  CONFIG_MODVERSIONS=y
  CONFIG_BLK_DEV_THROTTLING=y
  # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
 +CONFIG_BINFMT_MISC=m
+ # CONFIG_COMPAT_BRK is not set
  CONFIG_KSM=y
  CONFIG_MEMORY_FAILURE=y
- CONFIG_TRANSPARENT_HUGEPAGE=y
 -- 
-2.34.1
+2.45.2
 
