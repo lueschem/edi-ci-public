@@ -1,0 +1,57 @@
+name: "Build, dispatch and test fleet (master)"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fleet:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - repository: edi-pi
+            repository_version: master
+            configuration: pi2-gitops.yml
+            build_command: 'edi -v project make'
+            device_id: 048312b5-0456-47a7-9e83-b636f4c0a689
+            runner_label: ARM32
+            run_tests: true
+          - repository: edi-pi
+            repository_version: master
+            configuration: pi3-gitops.yml
+            build_command: 'edi -v project make'
+            device_id: f4580afc-7195-4c8b-b35a-e0248e6bd894
+            runner_label: ARM64
+            run_tests: false
+          - repository: edi-pi
+            repository_version: master
+            configuration: pi4-gitops.yml
+            build_command: 'edi -v project make'
+            device_id: 3fb4632b-96b9-475d-ac89-02255bd15b6f
+            runner_label: ARM64
+            run_tests: true
+          - repository: edi-cl
+            repository_version: master
+            configuration: iot-gate-imx8-gitops.yml
+            build_command: 'edi -v project make'
+            device_id: 5ef8c955-4f87-4243-adcd-160f70c3c45e
+            runner_label: ARM64
+            run_tests: true
+          - repository: edi-var
+            repository_version: master
+            configuration: var-som-mx8m-nano-gitops.yml
+            build_command: 'edi -v project make'
+            device_id: ed531b64-5108-4f1d-9879-f39f56054078
+            runner_label: ARM64
+            run_tests: true
+    uses: ./.github/workflows/os-workflow.yml
+    with:
+      repository: ${{ matrix.repository }}
+      repository_version: ${{ matrix.repository_version }}
+      configuration: ${{ matrix.configuration }}
+      build_command: ${{ matrix.build_command }}
+      device_id: ${{ matrix.device_id }}
+      runner_label: ${{ matrix.runner_label }}
+      run_tests: ${{ matrix.run_tests }}
+    secrets: inherit
+
