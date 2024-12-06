@@ -55,12 +55,12 @@ then
 fi
 
 # Prepare source archive:
-./docker-build-package debian "${DEBIAN_RELEASE}" "$(dpkg --print-architecture)" "${PACKAGE_NAME}" "${PACKAGE_VERSION}" true
+./docker-build-package 0 debian "${DEBIAN_RELEASE}" "$(dpkg --print-architecture)" "${PACKAGE_NAME}" "${PACKAGE_VERSION}" true
 
 # Build the packages:
 for arch in "${architectures[@]}"
 do
-    ./docker-build-package debian "${DEBIAN_RELEASE}" "${arch}" "${PACKAGE_NAME}" "${PACKAGE_VERSION}"
+    ./docker-build-package 0 debian "${DEBIAN_RELEASE}" "${arch}" "${PACKAGE_NAME}" "${PACKAGE_VERSION}"
 done
 
 echo "========"
