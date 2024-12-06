@@ -45,7 +45,7 @@ fi
 cd "${SCRIPT_DIR}/../../mender-dist-packages"
 
 # Make sure we have a pure Debian armhf environment and add flexiblity to build on arm64 host:
-git apply "${SCRIPT_DIR}/../patches/mender/0001-Removed-Raspbian-specific-setup-allow-cross-compilat.patch"
+git apply "${SCRIPT_DIR}/../patches/mender/0001-Allow-cross-compilation-on-arm64-use-podman.patch"
 
 declare -a architectures=("amd64" "armhf" "arm64")
 
