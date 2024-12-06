@@ -21,6 +21,12 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPT_DIR}/../../edi-pi"
 
 EDI_PI_CONFIG_NAME=pi-cross-dev-v2
+
+if [ ! -f "${EDI_PI_CONFIG_NAME}.yml" ]
+then
+    EDI_PI_CONFIG_NAME=pi-cross-dev
+fi
+
 DEBIAN_RELEASE=$(edi project make --config ${EDI_PI_CONFIG_NAME}.yml | grep debian_distribution_release | cut -d':' -f 2 | xargs)
 EXPECTED_PODMAN_IMAGE=mender-dist-packages-builder-debian-${DEBIAN_RELEASE}
 
