@@ -30,6 +30,13 @@ jobs:
             device_id: 3fb4632b-96b9-475d-ac89-02255bd15b6f
             runner_label: ARM64
             run_tests: true
+          - repository: edi-pi
+            repository_version: debian_bookworm
+            configuration: pi5-gitops.yml
+            build_command: 'sudo edi -v image create'
+            device_id: 56f3fd48-f55c-4f51-869b-0e65cee81070
+            runner_label: ARM64
+            run_tests: true
           - repository: edi-cl
             repository_version: debian_bookworm
             configuration: iot-gate-imx8-gitops.yml
