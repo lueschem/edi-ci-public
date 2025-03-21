@@ -12,19 +12,19 @@ then
     exit 1
 fi
 
-if [[ $# -ne 1 ]]
+if [[ $# -ne 2 ]]
 then
-    >&2 echo "Error: This script expects one parameter:"
-    >&2 echo "       build-kernel-compulab_v8 GIT_TAG"
+    >&2 echo "Error: This script expects two parameters:"
+    >&2 echo "       build-kernel-compulab-imx8 GIT_TAG [compulab_v8|iot-gate-imx8]"
     exit 1
 fi
 
-MACHINE=compulab_v8
 GIT_TAG="${1}"
+MACHINE="${2}"
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-cd "${SCRIPTDIR}/../.."
+cd "${SCRIPT_DIR}/../.."
 
 DEBIAN_FRONTEND=noninteractive apt-get update > /dev/null
 DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio libncurses5-dev bison libssl-dev wget lzop rsync debhelper fakeroot
@@ -34,12 +34,22 @@ cd "${GIT_TAG}"
 git clone -b "${GIT_TAG}" --depth 1 https://github.com/compulab-yokneam/linux-compulab.git
 cd linux-compulab
 
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ${MACHINE}_defconfig compulab.config
+if [ "${MACHINE}" == "iot-gate-imx8" ]
+then
+    make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- cl-imx8m-mini_defconfig "${MACHINE}".config
+elif [ "${MACHINE}" == "compulab_v8" ]
+then
+    make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- "${MACHINE}"_defconfig compulab.config
+else
+    >&2 echo "Error: Machine type '${MACHINE}' is not supported."
+    exit 1
+fi
+
 make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- deb-pkg
 
-BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
+BUILD_OUTPUT="${SCRIPT_DIR}/../../build-output"
 mkdir -p "${BUILD_OUTPUT}"
-find ../ -maxdepth 1 -type f | xargs -I {} cp {} "${BUILD_OUTPUT}"
+find ../ -maxdepth 1 -type f -exec cp {} "${BUILD_OUTPUT}" \;
 
 echo "========"
 echo "Success!"

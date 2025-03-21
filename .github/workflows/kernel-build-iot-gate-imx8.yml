@@ -1,4 +1,4 @@
-name: Build kernel for Compulab iot-gate-imx8
+name: Build kernel for Compulab iot-gate-imx8 (legacy)
 on:
   workflow_dispatch:
     inputs:

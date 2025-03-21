@@ -1,4 +1,4 @@
-name: Build kernel for Compulab iot-din-imx8plus and iot-gate-imx8plus
+name: Build kernel for Compulab iot-din-imx8plus, iot-gate-imx8 and iot-gate-imx8plus
 on:
   workflow_dispatch:
     inputs:
@@ -7,8 +7,16 @@ on:
         required: true
         default: 'bookworm'
       git_tag:
-        description: 'Git tag or branch of kernel (e.g. linux-compulab_v6.6.23)'
+        description: 'Git tag or branch of kernel (e.g. linux-compulab_v6.6.23, linux-compulab_v6.6.3)'
         required: true
+      machine_type:
+        description: 'Compulab machine type'
+        required: true
+        type: choice
+        options:
+        - iot-gate-imx8
+        - compulab_v8
+        default: iot-gate-imx8
 
 jobs:
   build:
@@ -26,7 +34,7 @@ jobs:
       - name: Pull docker container
         run: docker pull debian:"${{ inputs.distribution_release }}"
       - name: Run build job within docker container
-        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-compulab_v8 ${{ inputs.git_tag }}"
+        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-compulab-imx8 ${{ inputs.git_tag }} ${{ inputs.machine_type }}"
       - name: Upload package to packagecloud repository
         run: ./.github/scripts/upload-kernel-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
         env:
