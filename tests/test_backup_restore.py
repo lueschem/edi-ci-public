@@ -5,7 +5,12 @@ import pytest
                                       "ssh_host_ed25519_key.pub",
                                       "ssh_host_rsa_key.pub"])
 def test_ssh_backup_restore(host, filename):
-    backup_file = "/data/backup/ssh/{}".format(filename)
+    backup_folder = "/data/backup"
+
+    if not host.file(backup_folder).is_directory:
+        pytest.skip("There is no backup yet.")
+
+    backup_file = "{}/ssh/{}".format(backup_folder, filename)
     restored_file = "/etc/ssh/{}".format(filename)
 
     assert host.file(backup_file).exists
