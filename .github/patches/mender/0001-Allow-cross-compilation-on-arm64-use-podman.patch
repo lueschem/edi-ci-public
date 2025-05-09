@@ -1,6 +1,6 @@
-From 1813d0dee11b077df0d34de26e47168909b65757 Mon Sep 17 00:00:00 2001
+From abbd7fe076e9728650f8d812a456464e70ce0ea2 Mon Sep 17 00:00:00 2001
 From: Matthias Luescher <lueschem@gmail.com>
-Date: Fri, 6 Dec 2024 14:36:20 +0100
+Date: Fri, 9 May 2025 22:19:42 +0200
 Subject: [PATCH] Allow cross compilation on arm64, use podman.
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH] Allow cross compilation on arm64, use podman.
  2 files changed, 49 insertions(+), 26 deletions(-)
 
 diff --git a/docker-build-package b/docker-build-package
-index 600b6db..7b916a2 100755
+index 34192c5..026f936 100755
 --- a/docker-build-package
 +++ b/docker-build-package
 @@ -16,7 +16,7 @@
@@ -67,8 +67,8 @@ index 600b6db..7b916a2 100755
          --volume $(pwd)/recipes:/recipes \
          --volume $(pwd)/${output_dir}:/output \
          --volume $(pwd)/${orig_dir}:/orig \
-@@ -189,7 +191,7 @@ docker run --rm \
-         --env MENDER_PRIVATE_GPG_KEY_BUILD \
+@@ -190,7 +192,7 @@ docker run --rm \
+         --env GOLANG_VERSION \
          --env OVERRIDE_DEBIAN_SUFFIX \
          ${PLATFORM} \
 -        ${IMAGE_NAME_PREFIX}-${BUILD}-${DISTRO}-${RELEASE}-${ARCH}-${IMAGE_VERSION:-master} \
@@ -77,19 +77,19 @@ index 600b6db..7b916a2 100755
          ${recipe_name} \
          ${BUILD_TYPE} \
 diff --git a/mender-deb-package b/mender-deb-package
-index 42d5f7d..f8cfb4e 100755
+index ae409a7..63be3b1 100755
 --- a/mender-deb-package
 +++ b/mender-deb-package
-@@ -61,7 +61,7 @@ checkout_repo() {
+@@ -60,7 +60,7 @@ checkout_repo() {
+ }
  
  install_go() {
-   local GOLANG_VERSION=1.21.1
 -  local GOLANG_ARCH=amd64
 +  local GOLANG_ARCH=${HOST_ARCHITECTURE}
    local golang_version_set
    if [ $ARCH = "armhf" -a $OS_DISTRO = "raspbian" ]; then
      local GOLANG_ARCH=armv6l
-@@ -234,11 +234,23 @@ build_packages() {
+@@ -226,11 +226,23 @@ build_packages() {
  
    case "$ARCH" in
      amd64)
@@ -118,7 +118,7 @@ index 42d5f7d..f8cfb4e 100755
        ;;
  
      armhf)
-@@ -263,16 +275,23 @@ build_packages() {
+@@ -255,16 +267,23 @@ build_packages() {
        ;;
  
      arm64)
@@ -152,7 +152,7 @@ index 42d5f7d..f8cfb4e 100755
        ;;
    esac
  }
-@@ -300,6 +319,8 @@ copy_deb_packages() {
+@@ -292,6 +311,8 @@ copy_deb_packages() {
  # Run script #
  ##############
  
