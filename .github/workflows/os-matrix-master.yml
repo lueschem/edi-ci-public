@@ -44,6 +44,13 @@ jobs:
             device_id: 5ef8c955-4f87-4243-adcd-160f70c3c45e
             runner_label: ARM64
             run_tests: true
+          - repository: edi-cl
+            repository_version: master
+            configuration: iot-din-imx8plus-gitops.yml
+            build_command: 'edi -v project make'
+            device_id: d1531283-f83a-4fa9-ab2c-e575894fb88b
+            runner_label: ARM64
+            run_tests: true
           - repository: edi-var
             repository_version: master
             configuration: var-som-mx8m-nano-gitops.yml
