@@ -12,6 +12,10 @@ on:
       package_version:
         description: 'Version of package (e.g. 2.1.0)'
         required: true
+      golang_version:
+        description: 'Golang version used to build go based packages.'
+        required: true
+        default: 1.24.2
       runner_label:
         description: 'Label to select runner'
         required: true
@@ -44,6 +48,8 @@ jobs:
           path: mender-dist-packages
       - name: Build the Mender packages
         run: ./.github/scripts/build-mender-packages "${{ inputs.package_name }}" "${{ inputs.package_version }}"
+        env:
+          GOLANG_VERSION: "${{ inputs.golang_version }}"
       - name: Upload package to packagecloud repository
         run: ./.github/scripts/upload-mender-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.package_name }}"
         env:
