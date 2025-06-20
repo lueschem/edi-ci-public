@@ -18,13 +18,6 @@ jobs:
             run_tests: true
           - repository: edi-pi
             repository_version: debian_bookworm
-            configuration: pi3-gitops.yml
-            build_command: 'sudo edi -v image create'
-            device_id: f4580afc-7195-4c8b-b35a-e0248e6bd894
-            runner_label: ARM64
-            run_tests: false
-          - repository: edi-pi
-            repository_version: debian_bookworm
             configuration: pi4-gitops-v2.yml
             build_command: 'edi -v project make'
             device_id: 3fb4632b-96b9-475d-ac89-02255bd15b6f
