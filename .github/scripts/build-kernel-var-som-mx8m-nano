@@ -12,33 +12,37 @@ then
     exit 1
 fi
 
-if [[ $# -ne 1 ]]
+if [[ $# -ne 2 ]]
 then
-    >&2 echo "Error: This script expects one parameters:"
-    >&2 echo "       build-kernel-var-som-mx8m-nano KERNEL_BRANCH"
+    >&2 echo "Error: This script expects two parameters:"
+    >&2 echo "       build-kernel-var-som-mx8m-nano KERNEL_BRANCH GIT_COMMIT"
     exit 1
 fi
 
 KERNEL_BRANCH="${1}"
+GIT_COMMIT="${2}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "${SCRIPTDIR}/../.."
 
-DEBIAN_FRONTEND=noninteractive apt-get update > /dev/null
-DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio libncurses5-dev bison libssl-dev wget lzop rsync debhelper fakeroot
+export DEBIAN_FRONTEND=noninteractive
+apt-get update > /dev/null
+apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio libncurses5-dev bison libssl-dev wget lzop rsync debhelper fakeroot
 
 mkdir -p "${KERNEL_BRANCH}"
 cd "${KERNEL_BRANCH}"
 
-git clone -b "${KERNEL_BRANCH}" --single-branch https://github.com/varigit/linux-imx.git
+git clone --branch "${KERNEL_BRANCH}" --single-branch https://github.com/varigit/linux-imx.git
 cd linux-imx
+git checkout "${GIT_COMMIT}"
 git config user.email "lueschem@gmail.com"
 git config user.name "Matthias Luescher"
 git am "${SCRIPTDIR}"/../patches/var-som-mx8m-nano/*.patch
-
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- imx8_var_defconfig
-make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- deb-pkg
+export ARCH=arm64
+export CROSS_COMPILE=aarch64-linux-gnu-
+make imx8_var_defconfig
+make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image deb-pkg
 
 BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
 mkdir -p "${BUILD_OUTPUT}"

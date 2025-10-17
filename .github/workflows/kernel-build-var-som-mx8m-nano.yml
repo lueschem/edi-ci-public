@@ -7,7 +7,10 @@ on:
         required: true
         default: 'bookworm'
       kernel_branch:
-        description: 'Variscite kernel branch name (e.g. lf-6.1.y_var03)'
+        description: 'Variscite kernel branch name (e.g. lf-6.6.y_6.6.52-2.2.0_var01)'
+        required: true
+      git_commit:
+        description: 'Variscite kernel git commit (e.g. 277a0fcbc8b58405c2f0928704cfb31d5dd7e516)'
         required: true
 
 jobs:
@@ -26,7 +29,7 @@ jobs:
       - name: Pull docker container
         run: docker pull debian:"${{ inputs.distribution_release }}"
       - name: Run build job within docker container
-        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-var-som-mx8m-nano ${{ inputs.kernel_branch }}"
+        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-var-som-mx8m-nano ${{ inputs.kernel_branch }} ${{ inputs.git_commit }}"
       - name: Upload package to packagecloud repository
         run: ./.github/scripts/upload-kernel-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
         env:
