@@ -41,7 +41,7 @@ jobs:
             repository_version: debian_bookworm
             configuration: var-som-mx8m-nano-gitops.yml
             build_command: 'sudo edi -v image create'
-            device_id: ed531b64-5108-4f1d-9879-f39f56054078
+            device_id: 463625b9-801e-415d-b354-d9a2291fd2b3
             runner_label: ARM64
             run_tests: true
     uses: ./.github/workflows/os-workflow.yml
