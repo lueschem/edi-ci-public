@@ -39,6 +39,7 @@ cd linux
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
 make "${KERNEL_DEFCONFIG}"
+scripts/config --enable CONFIG_BTRFS_FS
 make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image deb-pkg
 
 BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
