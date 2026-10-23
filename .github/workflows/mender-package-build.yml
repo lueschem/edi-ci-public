@@ -30,18 +30,18 @@ jobs:
     runs-on: [self-hosted, Linux, "${{ inputs.runner_label }}"]
     steps:
       - name: Check out the source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: '0'
       - name: Check out the edi-pi repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: lueschem/edi-pi
           ref: ${{ inputs.edi_pi_repository_branch }}
           path: edi-pi
           submodules: recursive
       - name: Check out the mender-dist-packages repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: mendersoftware/mender-dist-packages
           ref: master
