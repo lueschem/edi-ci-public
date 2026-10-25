@@ -36,7 +36,7 @@ mkdir -p "${DIR_PREFIX}-${GIT_TAG}"
 cd "${DIR_PREFIX}-${GIT_TAG}"
 
 REPOSITORY_NAME="linux-compulab"
-git clone --branch "${GIT_TAG}" --depth 1 "https://github.com/compulab-yokneam/${REPOSITORY_NAME}.git"
+git clone --revision "${GIT_TAG}" --depth 1 "https://github.com/compulab-yokneam/${REPOSITORY_NAME}.git"
 cd "${REPOSITORY_NAME}"
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
@@ -46,7 +46,12 @@ then
     make cl-imx8m-mini_defconfig "${MACHINE}".config
 elif [ "${MACHINE}" == "compulab_v8" ]
 then
-    make "${MACHINE}"_defconfig compulab.config
+    if [ -f arch/arm64/configs/compulab.config ]
+    then
+        make "${MACHINE}"_defconfig compulab.config
+    else
+        make "${MACHINE}"_defconfig
+    fi
 else
     >&2 echo "Error: Machine type '${MACHINE}' is not supported."
     exit 1
