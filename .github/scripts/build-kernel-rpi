@@ -31,11 +31,13 @@ dpkg --add-architecture arm64
 apt-get update > /dev/null
 apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio lsb-release libdw-dev libncurses5-dev bison libelf-dev libssl-dev libssl-dev:arm64 wget lzop rsync debhelper fakeroot python3
 
-mkdir -p "rpi-${GIT_TAG}"
-cd "rpi-${GIT_TAG}"
+DIR_PREFIX="rpi"
+mkdir -p "${DIR_PREFIX}-${GIT_TAG}"
+cd "${DIR_PREFIX}-${GIT_TAG}"
 
-git clone --branch "${GIT_TAG}" --depth 1 https://github.com/raspberrypi/linux.git
-cd linux
+REPOSITORY_NAME="linux"
+git clone --branch "${GIT_TAG}" --depth 1 "https://github.com/raspberrypi/${REPOSITORY_NAME}.git"
+cd "${REPOSITORY_NAME}"
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
 make "${KERNEL_DEFCONFIG}"
@@ -44,7 +46,7 @@ make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image deb-pkg
 
 BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
 mkdir -p "${BUILD_OUTPUT}"
-find ../ -maxdepth 1 -type f | xargs -I {} cp {} "${BUILD_OUTPUT}"
+find ../ -maxdepth 1 -type f -exec cp {} "${BUILD_OUTPUT}" \;
 
 echo "========"
 echo "Success!"
