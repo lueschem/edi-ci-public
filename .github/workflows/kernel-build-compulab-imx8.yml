@@ -5,9 +5,9 @@ on:
       distribution_release:
         description: 'Debian distribution release'
         required: true
-        default: 'bookworm'
+        default: 'trixie'
       git_tag:
-        description: 'Git tag or branch of kernel (e.g. linux-compulab_v6.6.23, linux-compulab_v6.6.3)'
+        description: 'Git tag, branch or hash of kernel (e.g. linux-compulab_v6.6.23, linux-compulab_v6.6.3)'
         required: true
       machine_type:
         description: 'Compulab machine type'
@@ -20,7 +20,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Check out the source code
         uses: actions/checkout@v7
