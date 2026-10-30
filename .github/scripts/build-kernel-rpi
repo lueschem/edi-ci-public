@@ -14,7 +14,7 @@ fi
 
 if [[ $# -ne 2 ]]
 then
-    >&2 echo "Error: This script expects one parameters:"
+    >&2 echo "Error: This script expects two parameters:"
     >&2 echo "       build-kernel-rpi GIT_TAG KERNEL_DEFCONFIG"
     exit 1
 fi
@@ -35,9 +35,12 @@ DIR_PREFIX="rpi"
 mkdir -p "${DIR_PREFIX}-${GIT_TAG}"
 cd "${DIR_PREFIX}-${GIT_TAG}"
 
-REPOSITORY_NAME="linux"
-git clone --branch "${GIT_TAG}" --depth 1 "https://github.com/raspberrypi/${REPOSITORY_NAME}.git"
-cd "${REPOSITORY_NAME}"
+REPOSITORY_NAME="raspberrypi/linux"
+git init
+git remote add origin "https://github.com/${REPOSITORY_NAME}.git"
+git fetch --depth 1 origin "${GIT_TAG}"
+git checkout FETCH_HEAD
+
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
 make "${KERNEL_DEFCONFIG}"

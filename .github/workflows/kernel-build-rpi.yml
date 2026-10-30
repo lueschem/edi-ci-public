@@ -5,16 +5,16 @@ on:
       distribution_release:
         description: 'Debian distribution release'
         required: true
-        default: 'bookworm'
+        default: 'trixie'
       git_tag:
-        description: 'Git tag of kernel (e.g. stable_20231123)'
+        description: 'Git tag, branch or hash of kernel (e.g. stable_20231123)'
         required: true
       kernel_defconfig:
         description: 'Kernel defconfig (e.g. bcm2711_defconfig or bcm2712_defconfig)'
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Check out the source code
         uses: actions/checkout@v7

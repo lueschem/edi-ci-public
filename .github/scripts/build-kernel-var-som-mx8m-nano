@@ -12,41 +12,45 @@ then
     exit 1
 fi
 
-if [[ $# -ne 2 ]]
+if [[ $# -ne 1 ]]
 then
-    >&2 echo "Error: This script expects two parameters:"
-    >&2 echo "       build-kernel-var-som-mx8m-nano KERNEL_BRANCH GIT_COMMIT"
+    >&2 echo "Error: This script expects one parameter:"
+    >&2 echo "       build-kernel-var-som-mx8m-nano GIT_TAG"
     exit 1
 fi
 
-KERNEL_BRANCH="${1}"
-GIT_COMMIT="${2}"
+GIT_TAG="${1}"
+KERNEL_DEFCONFIG="imx8_var_defconfig"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "${SCRIPTDIR}/../.."
 
 export DEBIAN_FRONTEND=noninteractive
+dpkg --add-architecture arm64
 apt-get update > /dev/null
-apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio libncurses5-dev bison libssl-dev wget lzop rsync debhelper fakeroot
+apt-get --no-install-recommends -y install git ca-certificates build-essential crossbuild-essential-arm64 bc kmod cpio flex cpio lsb-release libdw-dev libncurses5-dev bison libelf-dev libssl-dev libssl-dev:arm64 wget lzop rsync debhelper fakeroot python3
 
-mkdir -p "${KERNEL_BRANCH}"
-cd "${KERNEL_BRANCH}"
+DIR_PREFIX="var"
+mkdir -p "${DIR_PREFIX}-${GIT_TAG}"
+cd "${DIR_PREFIX}-${GIT_TAG}"
 
-git clone --branch "${KERNEL_BRANCH}" --single-branch https://github.com/varigit/linux-imx.git
-cd linux-imx
-git checkout "${GIT_COMMIT}"
-git config user.email "lueschem@gmail.com"
-git config user.name "Matthias Luescher"
-git am "${SCRIPTDIR}"/../patches/var-som-mx8m-nano/*.patch
+REPOSITORY_NAME="varigit/linux-imx"
+git init
+git remote add origin "https://github.com/${REPOSITORY_NAME}.git"
+git fetch --depth 1 origin "${GIT_TAG}"
+git checkout FETCH_HEAD
+
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
-make imx8_var_defconfig
+make "${KERNEL_DEFCONFIG}"
+scripts/config --enable CONFIG_BTRFS_FS
+scripts/config --module CONFIG_BINFMT_MISC
 make -j "$(nproc)" KBUILD_IMAGE=arch/arm64/boot/Image deb-pkg
 
 BUILD_OUTPUT="${SCRIPTDIR}/../../build-output"
 mkdir -p "${BUILD_OUTPUT}"
-find ../ -maxdepth 1 -type f | xargs -I {} cp {} "${BUILD_OUTPUT}"
+find ../ -maxdepth 1 -type f -exec cp {} "${BUILD_OUTPUT}" \;
 
 echo "========"
 echo "Success!"

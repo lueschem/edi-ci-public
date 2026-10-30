@@ -35,11 +35,9 @@ DIR_PREFIX="cl"
 mkdir -p "${DIR_PREFIX}-${GIT_TAG}"
 cd "${DIR_PREFIX}-${GIT_TAG}"
 
-REPOSITORY_NAME="linux-compulab"
-mkdir "${REPOSITORY_NAME}"
-cd "${REPOSITORY_NAME}"
+REPOSITORY_NAME="compulab-yokneam/linux-compulab"
 git init
-git remote add origin "https://github.com/compulab-yokneam/${REPOSITORY_NAME}.git"
+git remote add origin "https://github.com/${REPOSITORY_NAME}.git"
 git fetch --depth 1 origin "${GIT_TAG}"
 git checkout FETCH_HEAD
 

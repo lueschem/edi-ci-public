@@ -5,17 +5,14 @@ on:
       distribution_release:
         description: 'Debian distribution release'
         required: true
-        default: 'bookworm'
-      kernel_branch:
-        description: 'Variscite kernel branch name (e.g. lf-6.6.y_6.6.52-2.2.0_var01)'
-        required: true
-      git_commit:
-        description: 'Variscite kernel git commit (e.g. 277a0fcbc8b58405c2f0928704cfb31d5dd7e516)'
+        default: 'trixie'
+      git_tag:
+        description: 'Git tag, branch or hash of kernel (e.g. d5ae748b1c9683c61d04dd20deb36787d46dc184)'
         required: true
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Check out the source code
         uses: actions/checkout@v7
@@ -29,7 +26,7 @@ jobs:
       - name: Pull docker container
         run: docker pull debian:"${{ inputs.distribution_release }}"
       - name: Run build job within docker container
-        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-var-som-mx8m-nano ${{ inputs.kernel_branch }} ${{ inputs.git_commit }}"
+        run: docker run -v $(pwd):/data/runner debian:"${{ inputs.distribution_release }}" bash -c "/data/runner/.github/scripts/build-kernel-var-som-mx8m-nano ${{ inputs.git_tag }}"
       - name: Upload package to packagecloud repository
         run: ./.github/scripts/upload-kernel-packages-packagecloud "${PACKAGECLOUD_USER}" "${PACKAGECLOUD_REPOSITORY}" debian "${{ inputs.distribution_release }}"
         env:
